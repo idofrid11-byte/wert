@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
@@ -37,6 +38,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -79,7 +83,22 @@ fun DiscoverScreen(
     val anime by viewModel.animeList.collectAsStateWithLifecycle()
     val watchlist by viewModel.watchlist.collectAsStateWithLifecycle()
 
+    var selectedGenre by remember { mutableStateOf("All") }
+
     val continueWatchingItems = watchlist.filter { it.progressPercent in 0.01f..0.98f }
+
+    val allCatalogsCombined = remember(trending, movies, series, anime) {
+        (trending + movies + series + anime).distinctBy { it.id }
+    }
+
+    val genreFilteredItems = remember(selectedGenre, allCatalogsCombined) {
+        if (selectedGenre == "All") emptyList()
+        else allCatalogsCombined.filter { item ->
+            item.genres.any { it.contains(selectedGenre, ignoreCase = true) }
+        }
+    }
+
+    val genres = listOf("All", "Sci-Fi", "Action", "Drama", "Animation", "Crime", "Thriller", "Adventure")
 
     Column(
         modifier = modifier
@@ -98,7 +117,7 @@ fun DiscoverScreen(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(34.dp)
                         .clip(RoundedCornerShape(8.dp))
                         .background(PrimaryViolet),
                     contentAlignment = Alignment.Center
@@ -128,26 +147,62 @@ fun DiscoverScreen(
                 }
             }
 
-            // Status Indicator
+            // Top Actions: Surprise Me + Status Indicator
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(SurfaceVariantDark)
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Box(
+                // Surprise Me Button
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFF10B981))
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "Cinemeta Online",
-                    color = TextSecondary,
-                    fontSize = 10.sp
-                )
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(PrimaryViolet.copy(alpha = 0.25f))
+                        .clickable {
+                            if (allCatalogsCombined.isNotEmpty()) {
+                                val randomPick = allCatalogsCombined.random()
+                                viewModel.openMediaDetail(randomPick)
+                            }
+                        }
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                        .testTag("btn_surprise_me")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = "Surprise Me",
+                        tint = SecondaryCyan,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Random Pick",
+                        color = TextPrimary,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                // Status Indicator
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(SurfaceVariantDark)
+                        .padding(horizontal = 8.dp, vertical = 6.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF10B981))
+                    )
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Text(
+                        text = "Cinemeta",
+                        color = TextSecondary,
+                        fontSize = 10.sp
+                    )
+                }
             }
         }
 
@@ -187,11 +242,11 @@ fun DiscoverScreen(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 6.dp)
+                .padding(horizontal = 16.dp, vertical = 4.dp)
                 .testTag("search_text_field")
         )
 
-        // Filter Pills
+        // Filter Pills Row (All, Movies, Series, Anime)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -202,7 +257,10 @@ fun DiscoverScreen(
                 val isSelected = filter == key
                 FilterChip(
                     selected = isSelected,
-                    onClick = { viewModel.setFilter(key) },
+                    onClick = {
+                        viewModel.setFilter(key)
+                        selectedGenre = "All"
+                    },
                     label = {
                         Text(
                             text = label,
@@ -223,7 +281,33 @@ fun DiscoverScreen(
             }
         }
 
-        // Search Results View OR Normal Catalogs View
+        // Sub-genre Horizontal Row
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 2.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            items(genres) { genre ->
+                val isSelected = selectedGenre == genre
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(if (isSelected) SecondaryCyan.copy(alpha = 0.2f) else SurfaceDark)
+                        .clickable { selectedGenre = genre }
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = genre,
+                        color = if (isSelected) SecondaryCyan else TextMuted,
+                        fontSize = 11.sp,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                    )
+                }
+            }
+        }
+
+        // Search Results View OR Genre Filter Grid OR Normal Catalogs View
         if (searchQuery.isNotBlank()) {
             if (isSearching) {
                 Box(
@@ -261,6 +345,32 @@ fun DiscoverScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(searchResults, key = { it.id }) { item ->
+                        MediaPosterCard(
+                            item = item,
+                            onClick = { viewModel.openMediaDetail(item) }
+                        )
+                    }
+                }
+            }
+        } else if (selectedGenre != "All") {
+            // Genre grid
+            Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "$selectedGenre Titles (${genreFilteredItems.size})",
+                    color = SecondaryCyan,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(130.dp),
+                    contentPadding = PaddingValues(bottom = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(genreFilteredItems, key = { it.id }) { item ->
                         MediaPosterCard(
                             item = item,
                             onClick = { viewModel.openMediaDetail(item) }

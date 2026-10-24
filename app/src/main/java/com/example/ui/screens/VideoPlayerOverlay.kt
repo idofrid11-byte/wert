@@ -27,17 +27,19 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AspectRatio
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Audiotrack
+import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ClosedCaption
-import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.Forward10
-import androidx.compose.material.icons.filled.GraphicEq
+import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Replay10
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Subtitles
 import androidx.compose.material.icons.filled.SurroundSound
@@ -80,6 +82,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.data.model.AspectRatioMode
 import com.example.data.model.AudioPlaybackSettings
 import com.example.data.model.MediaStream
 import com.example.data.model.SubtitlePlaybackSettings
@@ -105,6 +108,9 @@ fun VideoPlayerOverlay(
     onSwitchStream: (MediaStream) -> Unit,
     onUpdateAudioSettings: (AudioPlaybackSettings) -> Unit,
     onUpdateSubtitleSettings: (SubtitlePlaybackSettings) -> Unit,
+    onSetAspectRatio: (AspectRatioMode) -> Unit,
+    onSetSleepTimer: (minutes: Int?) -> Unit,
+    onPlayNextEpisode: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     BackHandler { onClose() }
@@ -126,9 +132,13 @@ fun VideoPlayerOverlay(
     var showAudioSettingsDialog by remember { mutableStateOf(false) }
     var showSubtitleSettingsDialog by remember { mutableStateOf(false) }
     var showSpeedPickerMenu by remember { mutableStateOf(false) }
+    var showAspectRatioMenu by remember { mutableStateOf(false) }
+    var showSleepTimerDialog by remember { mutableStateOf(false) }
 
-    // Auto-hide controls timer (paused when a dialog or menu is open)
-    val isAnyModalOpen = showStreamPickerMenu || showAudioSettingsDialog || showSubtitleSettingsDialog || showSpeedPickerMenu
+    val isAnyModalOpen = showStreamPickerMenu || showAudioSettingsDialog || showSubtitleSettingsDialog ||
+            showSpeedPickerMenu || showAspectRatioMenu || showSleepTimerDialog
+
+    // Auto-hide controls timer
     LaunchedEffect(isControlsVisible, isPlaying, isAnyModalOpen) {
         if (isControlsVisible && isPlaying && !isAnyModalOpen) {
             delay(4000)
@@ -156,7 +166,7 @@ fun VideoPlayerOverlay(
         }
     }
 
-    // Calculate current live subtitle line according to timestamp & timing offset
+    // Subtitle rendering calculation
     val effectiveTimeMs = currentPosMs + subtitleSettings.subtitleDelayMs
     val currentSubtitleText = remember(effectiveTimeMs, subtitleSettings.selectedTrackId) {
         if (subtitleSettings.selectedTrackId == "none") ""
@@ -317,14 +327,27 @@ fun VideoPlayerOverlay(
                         Spacer(modifier = Modifier.width(12.dp))
 
                         Column {
-                            Text(
-                                text = media.title,
-                                color = TextPrimary,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = media.title,
+                                    color = TextPrimary,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                if (playerState.isTrailerMode) {
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(PrimaryViolet)
+                                            .padding(horizontal = 5.dp, vertical = 2.dp)
+                                    ) {
+                                        Text("TRAILER", color = TextPrimary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            }
                             if (playerState.episode != null) {
                                 Text(
                                     text = "S${playerState.episode.season} E${playerState.episode.number}: ${playerState.episode.title}",
@@ -336,19 +359,81 @@ fun VideoPlayerOverlay(
                         }
                     }
 
-                    // Actions Bar: Quality, Speed, Audio, Subtitles
+                    // Top Action Buttons: Aspect Ratio, Sleep Timer, Speed, Audio, Subtitles, Quality
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        // Speed Switcher
+                        // Sleep Timer Button & Badge
+                        IconButton(
+                            onClick = { showSleepTimerDialog = true },
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (playerState.sleepTimerRemainingSec != null) PrimaryViolet else Color.White.copy(alpha = 0.15f))
+                                .testTag("player_sleep_timer_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Bedtime,
+                                contentDescription = "Sleep Timer",
+                                tint = TextPrimary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        // Aspect Ratio Switcher
+                        Box {
+                            IconButton(
+                                onClick = { showAspectRatioMenu = true },
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color.White.copy(alpha = 0.15f))
+                                    .testTag("player_aspect_ratio_button")
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AspectRatio,
+                                    contentDescription = "Aspect Ratio",
+                                    tint = TextPrimary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+
+                            DropdownMenu(
+                                expanded = showAspectRatioMenu,
+                                onDismissRequest = { showAspectRatioMenu = false },
+                                modifier = Modifier.background(SurfaceDark)
+                            ) {
+                                listOf(
+                                    AspectRatioMode.FIT to "Fit to Screen",
+                                    AspectRatioMode.FILL_CROP to "Fill & Crop (Zoom)",
+                                    AspectRatioMode.STRETCH to "Stretch (Full)"
+                                ).forEach { (mode, label) ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text = label,
+                                                color = if (playerState.aspectRatioMode == mode) SecondaryCyan else TextPrimary,
+                                                fontWeight = if (playerState.aspectRatioMode == mode) FontWeight.Bold else FontWeight.Normal
+                                            )
+                                        },
+                                        onClick = {
+                                            showAspectRatioMenu = false
+                                            onSetAspectRatio(mode)
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        // Playback Speed
                         Box {
                             Row(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(Color.White.copy(alpha = 0.15f))
                                     .clickable { showSpeedPickerMenu = true }
-                                    .padding(horizontal = 8.dp, vertical = 6.dp)
+                                    .padding(horizontal = 7.dp, vertical = 6.dp)
                                     .testTag("player_speed_button"),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -387,7 +472,7 @@ fun VideoPlayerOverlay(
                         IconButton(
                             onClick = { showAudioSettingsDialog = true },
                             modifier = Modifier
-                                .size(36.dp)
+                                .size(34.dp)
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(if (audioSettings.audioBoostLevel > 0 || audioSettings.speechClarity) PrimaryViolet.copy(alpha = 0.6f) else Color.White.copy(alpha = 0.15f))
                                 .testTag("player_audio_settings_button")
@@ -396,7 +481,7 @@ fun VideoPlayerOverlay(
                                 imageVector = Icons.Default.Audiotrack,
                                 contentDescription = "Audio Settings",
                                 tint = TextPrimary,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(16.dp)
                             )
                         }
 
@@ -404,7 +489,7 @@ fun VideoPlayerOverlay(
                         IconButton(
                             onClick = { showSubtitleSettingsDialog = true },
                             modifier = Modifier
-                                .size(36.dp)
+                                .size(34.dp)
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(if (subtitleSettings.selectedTrackId != "none") SecondaryCyan.copy(alpha = 0.3f) else Color.White.copy(alpha = 0.15f))
                                 .testTag("player_subtitle_settings_button")
@@ -413,7 +498,7 @@ fun VideoPlayerOverlay(
                                 imageVector = Icons.Default.ClosedCaption,
                                 contentDescription = "Subtitle Settings",
                                 tint = if (subtitleSettings.selectedTrackId != "none") SecondaryCyan else TextPrimary,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(16.dp)
                             )
                         }
 
@@ -424,7 +509,7 @@ fun VideoPlayerOverlay(
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(Color.White.copy(alpha = 0.15f))
                                     .clickable { showStreamPickerMenu = true }
-                                    .padding(horizontal = 8.dp, vertical = 6.dp)
+                                    .padding(horizontal = 7.dp, vertical = 6.dp)
                                     .testTag("player_quality_button"),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -468,11 +553,30 @@ fun VideoPlayerOverlay(
                     }
                 }
 
-                // Center Play/Pause & Seek 10s
+                // Sleep Timer Live Countdown Notification Bar (if active)
+                if (playerState.sleepTimerRemainingSec != null) {
+                    val remMin = playerState.sleepTimerRemainingSec / 60
+                    val remSec = playerState.sleepTimerRemainingSec % 60
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = 65.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(PrimaryViolet.copy(alpha = 0.85f))
+                            .padding(horizontal = 10.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Bedtime, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(12.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Sleep in ${remMin}m ${remSec}s", color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                // Center Play/Pause, Seek 10s, and Next Episode Buttons
                 Row(
                     modifier = Modifier.align(Alignment.Center),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(28.dp)
+                    horizontalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     IconButton(
                         onClick = {
@@ -482,7 +586,7 @@ fun VideoPlayerOverlay(
                             }
                         },
                         modifier = Modifier
-                            .size(48.dp)
+                            .size(46.dp)
                             .clip(CircleShape)
                             .background(Color.White.copy(alpha = 0.15f))
                             .testTag("player_rewind_button")
@@ -491,13 +595,13 @@ fun VideoPlayerOverlay(
                             imageVector = Icons.Default.Replay10,
                             contentDescription = "Rewind 10s",
                             tint = TextPrimary,
-                            modifier = Modifier.size(26.dp)
+                            modifier = Modifier.size(24.dp)
                         )
                     }
 
                     Box(
                         modifier = Modifier
-                            .size(72.dp)
+                            .size(68.dp)
                             .clip(CircleShape)
                             .background(PrimaryViolet)
                             .clickable {
@@ -518,7 +622,7 @@ fun VideoPlayerOverlay(
                             imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                             contentDescription = if (isPlaying) "Pause" else "Play",
                             tint = TextPrimary,
-                            modifier = Modifier.size(40.dp)
+                            modifier = Modifier.size(38.dp)
                         )
                     }
 
@@ -530,7 +634,7 @@ fun VideoPlayerOverlay(
                             }
                         },
                         modifier = Modifier
-                            .size(48.dp)
+                            .size(46.dp)
                             .clip(CircleShape)
                             .background(Color.White.copy(alpha = 0.15f))
                             .testTag("player_forward_button")
@@ -539,8 +643,27 @@ fun VideoPlayerOverlay(
                             imageVector = Icons.Default.Forward10,
                             contentDescription = "Forward 10s",
                             tint = TextPrimary,
-                            modifier = Modifier.size(26.dp)
+                            modifier = Modifier.size(24.dp)
                         )
+                    }
+
+                    // Next Episode Button (Series mode)
+                    if (playerState.episode != null) {
+                        IconButton(
+                            onClick = onPlayNextEpisode,
+                            modifier = Modifier
+                                .size(46.dp)
+                                .clip(CircleShape)
+                                .background(SecondaryCyan.copy(alpha = 0.25f))
+                                .testTag("player_next_episode_button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.SkipNext,
+                                contentDescription = "Next Episode",
+                                tint = SecondaryCyan,
+                                modifier = Modifier.size(26.dp)
+                            )
+                        }
                     }
                 }
 
@@ -623,6 +746,52 @@ fun VideoPlayerOverlay(
             }
         }
 
+        // SLEEP TIMER MODAL
+        if (showSleepTimerDialog) {
+            AlertDialog(
+                onDismissRequest = { showSleepTimerDialog = false },
+                containerColor = SurfaceDark,
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Bedtime, contentDescription = null, tint = PrimaryViolet)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Sleep Timer", color = TextPrimary, fontWeight = FontWeight.Bold)
+                    }
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Automatically pause playback after the chosen duration:", color = TextSecondary, fontSize = 13.sp)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        listOf(null to "Off (Never)", 15 to "15 minutes", 30 to "30 minutes", 45 to "45 minutes", 60 to "60 minutes").forEach { (mins, lbl) ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(SurfaceVariantDark)
+                                    .clickable {
+                                        onSetSleepTimer(mins)
+                                        showSleepTimerDialog = false
+                                    }
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(lbl, color = TextPrimary, fontSize = 13.sp)
+                                if (mins != null && playerState.sleepTimerRemainingSec != null && (playerState.sleepTimerRemainingSec / 60) <= mins) {
+                                    Icon(Icons.Default.Check, contentDescription = null, tint = SecondaryCyan, modifier = Modifier.size(16.dp))
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(onClick = { showSleepTimerDialog = false }, colors = ButtonDefaults.buttonColors(containerColor = PrimaryViolet)) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+
         // AUDIO SETTINGS DIALOG
         if (showAudioSettingsDialog) {
             AudioSettingsModal(
@@ -687,7 +856,6 @@ private fun AudioSettingsModal(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // Audio Tracks Picker
                 Text("AUDIO TRACK", color = SecondaryCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 tracks.forEach { track ->
                     val isSelected = selectedTrack == track.id
@@ -713,7 +881,6 @@ private fun AudioSettingsModal(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // Speech Clarity / Night Mode
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -734,7 +901,6 @@ private fun AudioSettingsModal(
                     )
                 }
 
-                // Volume Boost Level
                 Column {
                     Text("VOLUME BOOST", color = SecondaryCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                     Spacer(modifier = Modifier.height(6.dp))
@@ -756,7 +922,6 @@ private fun AudioSettingsModal(
                     }
                 }
 
-                // Audio Delay / Sync Slider
                 Column {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -774,7 +939,6 @@ private fun AudioSettingsModal(
                     )
                 }
 
-                // Surround Sound 5.1
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -853,7 +1017,6 @@ private fun SubtitleSettingsModal(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // Subtitle Track Selection
                 Text("SUBTITLE LANGUAGE", color = SecondaryCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 tracks.forEach { track ->
                     val isSelected = selectedTrack == track.id
@@ -881,7 +1044,6 @@ private fun SubtitleSettingsModal(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // Subtitle Timing Delay
                 Column {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -899,7 +1061,6 @@ private fun SubtitleSettingsModal(
                     )
                 }
 
-                // Subtitle Text Size
                 Column {
                     Text("FONT SIZE", color = SecondaryCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                     Spacer(modifier = Modifier.height(6.dp))
@@ -921,7 +1082,6 @@ private fun SubtitleSettingsModal(
                     }
                 }
 
-                // Subtitle Color
                 Column {
                     Text("TEXT COLOR", color = SecondaryCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                     Spacer(modifier = Modifier.height(6.dp))
@@ -962,7 +1122,6 @@ private fun SubtitleSettingsModal(
                     }
                 }
 
-                // Background Style
                 Column {
                     Text("BACKGROUND STYLE", color = SecondaryCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                     Spacer(modifier = Modifier.height(6.dp))
@@ -984,7 +1143,6 @@ private fun SubtitleSettingsModal(
                     }
                 }
 
-                // Vertical Position (Bottom / Top)
                 Column {
                     Text("SCREEN POSITION", color = SecondaryCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                     Spacer(modifier = Modifier.height(6.dp))
@@ -1034,7 +1192,6 @@ private fun SubtitleSettingsModal(
     )
 }
 
-// Generate realistic subtitles timed with the media playback
 private fun getSubtitleTextForTimestamp(timeMs: Long, title: String, trackId: String): String {
     val sec = (timeMs / 1000) % 60
     val isSpanish = trackId.startsWith("es")

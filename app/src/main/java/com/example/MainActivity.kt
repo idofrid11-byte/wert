@@ -16,10 +16,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Extension
 import androidx.compose.material.icons.outlined.Settings
@@ -40,6 +42,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ui.AppTab
 import com.example.ui.MainViewModel
 import com.example.ui.screens.AddonsScreen
+import com.example.ui.screens.AuthScreen
+import com.example.ui.screens.CalendarScreen
 import com.example.ui.screens.DiscoverScreen
 import com.example.ui.screens.LibraryScreen
 import com.example.ui.screens.MediaDetailSheet
@@ -69,12 +73,29 @@ class MainActivity : ComponentActivity() {
 fun MainAppContent(
     viewModel: MainViewModel = viewModel()
 ) {
+    val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
     val currentTab by viewModel.currentTab.collectAsStateWithLifecycle()
     val selectedMedia by viewModel.selectedMedia.collectAsStateWithLifecycle()
     val streams by viewModel.selectedMediaStreams.collectAsStateWithLifecycle()
     val playerState by viewModel.playerState.collectAsStateWithLifecycle()
+    val similarMedia by viewModel.similarMedia.collectAsStateWithLifecycle()
+    val castProfiles by viewModel.castProfiles.collectAsStateWithLifecycle()
+    val collections by viewModel.collections.collectAsStateWithLifecycle()
     val audioSettings by viewModel.audioSettings.collectAsStateWithLifecycle()
     val subtitleSettings by viewModel.subtitleSettings.collectAsStateWithLifecycle()
+
+    // Mandatory Authentication Gate: Must create an account or login with email & password
+    if (currentUser == null) {
+        AuthScreen(
+            onAccountCreated = { email, password, username ->
+                viewModel.createAccount(email, password, username)
+            },
+            onLogin = { email, password ->
+                viewModel.login(email, password)
+            }
+        )
+        return
+    }
 
     // Global back handling
     if (playerState.isOpen) {
@@ -106,7 +127,7 @@ fun MainAppContent(
                                     contentDescription = "Discover"
                                 )
                             },
-                            label = { Text("Discover", fontSize = 11.sp) },
+                            label = { Text("Discover", fontSize = 10.sp) },
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = TextPrimary,
                                 selectedTextColor = SecondaryCyan,
@@ -115,6 +136,27 @@ fun MainAppContent(
                                 unselectedTextColor = TextMuted
                             ),
                             modifier = Modifier.testTag("nav_item_discover")
+                        )
+
+                        // Calendar / Up Next
+                        NavigationBarItem(
+                            selected = currentTab == AppTab.CALENDAR,
+                            onClick = { viewModel.selectTab(AppTab.CALENDAR) },
+                            icon = {
+                                Icon(
+                                    imageVector = if (currentTab == AppTab.CALENDAR) Icons.Filled.CalendarMonth else Icons.Outlined.CalendarMonth,
+                                    contentDescription = "Calendar"
+                                )
+                            },
+                            label = { Text("Calendar", fontSize = 10.sp) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = TextPrimary,
+                                selectedTextColor = SecondaryCyan,
+                                indicatorColor = PrimaryViolet,
+                                unselectedIconColor = TextMuted,
+                                unselectedTextColor = TextMuted
+                            ),
+                            modifier = Modifier.testTag("nav_item_calendar")
                         )
 
                         // Library
@@ -127,7 +169,7 @@ fun MainAppContent(
                                     contentDescription = "Library"
                                 )
                             },
-                            label = { Text("Library", fontSize = 11.sp) },
+                            label = { Text("Library", fontSize = 10.sp) },
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = TextPrimary,
                                 selectedTextColor = SecondaryCyan,
@@ -148,7 +190,7 @@ fun MainAppContent(
                                     contentDescription = "Add-ons"
                                 )
                             },
-                            label = { Text("Add-ons", fontSize = 11.sp) },
+                            label = { Text("Add-ons", fontSize = 10.sp) },
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = TextPrimary,
                                 selectedTextColor = SecondaryCyan,
@@ -169,7 +211,7 @@ fun MainAppContent(
                                     contentDescription = "Settings"
                                 )
                             },
-                            label = { Text("Settings", fontSize = 11.sp) },
+                            label = { Text("Settings", fontSize = 10.sp) },
                             colors = NavigationBarItemDefaults.colors(
                                 selectedIconColor = TextPrimary,
                                 selectedTextColor = SecondaryCyan,
@@ -191,6 +233,7 @@ fun MainAppContent(
             ) {
                 when (currentTab) {
                     AppTab.DISCOVER -> DiscoverScreen(viewModel = viewModel)
+                    AppTab.CALENDAR -> CalendarScreen(viewModel = viewModel)
                     AppTab.LIBRARY -> LibraryScreen(viewModel = viewModel)
                     AppTab.ADDONS -> AddonsScreen(viewModel = viewModel)
                     AppTab.SETTINGS -> SettingsScreen(viewModel = viewModel)
@@ -209,12 +252,19 @@ fun MainAppContent(
                 MediaDetailSheet(
                     media = media,
                     streams = streams,
+                    similarMedia = similarMedia,
+                    castProfiles = castProfiles,
+                    collections = collections,
                     isWatchlisted = viewModel.isWatchlisted(media.id),
                     onClose = { viewModel.closeMediaDetail() },
                     onPlayDefault = { viewModel.playMediaDefault(media) },
                     onPlayStream = { stream -> viewModel.playStream(media, stream) },
                     onPlayEpisode = { ep -> viewModel.playMediaDefault(media, ep) },
-                    onToggleWatchlist = { viewModel.toggleWatchlist(media) }
+                    onPlayTrailer = { viewModel.playTrailer(media) },
+                    onDownloadStream = { stream -> viewModel.startDownload(media, stream) },
+                    onToggleWatchlist = { viewModel.toggleWatchlist(media) },
+                    onSelectSimilar = { item -> viewModel.openMediaDetail(item) },
+                    onAddToCollection = { colId -> viewModel.toggleItemInCollection(colId, media.id) }
                 )
             }
         }
@@ -253,6 +303,15 @@ fun MainAppContent(
                     viewModel.setSubtitleColor(updated.textColorHex)
                     viewModel.setSubtitleBackground(updated.backgroundStyle)
                     viewModel.setSubtitlePosition(updated.verticalPosition)
+                },
+                onSetAspectRatio = { mode ->
+                    viewModel.setAspectRatio(mode)
+                },
+                onSetSleepTimer = { minutes ->
+                    viewModel.setSleepTimer(minutes)
+                },
+                onPlayNextEpisode = {
+                    viewModel.playNextEpisode()
                 }
             )
         }

@@ -20,19 +20,33 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.ClosedCaption
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.GraphicEq
+import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.RecordVoiceOver
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Subtitles
 import androidx.compose.material.icons.filled.SurroundSound
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.VideoSettings
+import androidx.compose.material.icons.filled.VpnKey
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
@@ -73,10 +87,19 @@ fun SettingsScreen(
     val audioSettings by viewModel.audioSettings.collectAsStateWithLifecycle()
     val subtitleSettings by viewModel.subtitleSettings.collectAsStateWithLifecycle()
 
+    val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
+    val debridAccount by viewModel.debridAccount.collectAsStateWithLifecycle()
+    val watchStats by viewModel.watchStats.collectAsStateWithLifecycle()
+    val kidsModeEnabled by viewModel.kidsModeEnabled.collectAsStateWithLifecycle()
+
     var hardwareAcc by remember { mutableStateOf(true) }
     var autoPlayNext by remember { mutableStateOf(true) }
     var autoSyncAddons by remember { mutableStateOf(true) }
     var defaultQuality by remember { mutableStateOf("1080p") }
+
+    var showChangePasswordDialog by remember { mutableStateOf(false) }
+    var newPasswordInput by remember { mutableStateOf("") }
+    var magnetInput by remember { mutableStateOf("") }
 
     Column(
         modifier = modifier
@@ -101,7 +124,7 @@ fun SettingsScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Player engine, audio & subtitle preferences",
+                    text = "Account, debrid, audio, subtitles & stream engine",
                     color = TextMuted,
                     fontSize = 12.sp
                 )
@@ -120,6 +143,323 @@ fun SettingsScreen(
                     tint = SecondaryCyan,
                     modifier = Modifier.size(20.dp)
                 )
+            }
+        }
+
+        // ==========================================
+        // SECTION: ACCOUNT & PROFILE (MANDATORY GATE)
+        // ==========================================
+        Text(
+            text = "ACCOUNT & CLOUD PROFILE",
+            color = PrimaryViolet,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
+        )
+
+        Card(
+            shape = RoundedCornerShape(14.dp),
+            colors = CardDefaults.cardColors(containerColor = SurfaceVariantDark),
+            modifier = Modifier.testTag("account_profile_card")
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(50.dp)
+                            .clip(CircleShape)
+                            .background(PrimaryViolet),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Avatar",
+                            tint = TextPrimary,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(14.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = currentUser?.username ?: "AetherStream User",
+                            color = TextPrimary,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = currentUser?.email ?: "Not signed in",
+                            color = SecondaryCyan,
+                            fontSize = 12.sp
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(Color(0xFF00E676).copy(alpha = 0.2f))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text("VIP Member", color = Color(0xFF00E676), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            }
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Cloud Sync Active", color = TextMuted, fontSize = 10.sp)
+                        }
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { showChangePasswordDialog = true },
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Default.VpnKey, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(14.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Change Password", color = TextPrimary, fontSize = 11.sp)
+                    }
+
+                    Button(
+                        onClick = {
+                            viewModel.logout()
+                            Toast.makeText(context, "Logged out. Please sign in to continue.", Toast.LENGTH_SHORT).show()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935).copy(alpha = 0.25f)),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("logout_button")
+                    ) {
+                        Icon(Icons.Default.Logout, contentDescription = null, tint = Color(0xFFFF8A80), modifier = Modifier.size(14.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Log Out", color = Color(0xFFFF8A80), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+
+        // ==========================================
+        // SECTION: DEBRID CLOUD SERVICE PROVIDER
+        // ==========================================
+        Text(
+            text = "DEBRID CLOUD STREAMING",
+            color = SecondaryCyan,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
+        )
+
+        Card(
+            shape = RoundedCornerShape(14.dp),
+            colors = CardDefaults.cardColors(containerColor = SurfaceVariantDark)
+        ) {
+            Column(
+                modifier = Modifier.padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Cloud, contentDescription = null, tint = SecondaryCyan, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Active Debrid Provider", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        }
+                        Text("Instant cached bufferless torrent streaming", color = TextMuted, fontSize = 11.sp)
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0xFF00E676).copy(alpha = 0.2f))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text("${debridAccount.daysRemaining} Days Left", color = Color(0xFF00E676), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                // Provider Switcher Chips
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf("Real-Debrid", "AllDebrid", "Premiumize", "TorBox").forEach { prov ->
+                        val isProv = debridAccount.provider == prov
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(if (isProv) PrimaryViolet else SurfaceHighlight)
+                                .clickable { viewModel.updateDebridAccount(debridAccount.copy(provider = prov)) }
+                                .padding(vertical = 7.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(prov, color = if (isProv) TextPrimary else TextSecondary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+
+                // CDN Server Location
+                Column {
+                    Text("Debrid CDN Server Routing", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(debridAccount.selectedCdnServer, color = SecondaryCyan, fontSize = 11.sp)
+                }
+
+                // Cloud Magnet Direct Cacher
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("Instant Cloud Magnet Streamer", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedTextField(
+                            value = magnetInput,
+                            onValueChange = { magnetInput = it },
+                            placeholder = { Text("magnet:?xt=urn:btih:...", fontSize = 11.sp) },
+                            singleLine = true,
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = SurfaceDark,
+                                unfocusedContainerColor = SurfaceDark,
+                                focusedIndicatorColor = SecondaryCyan,
+                                unfocusedIndicatorColor = SurfaceHighlight,
+                                focusedTextColor = TextPrimary,
+                                unfocusedTextColor = TextPrimary
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        Button(
+                            onClick = {
+                                if (magnetInput.isNotBlank()) {
+                                    viewModel.addMagnetToDebrid(magnetInput, "Direct Cloud Stream")
+                                    magnetInput = ""
+                                    Toast.makeText(context, "Cached to Cloud! Ready to stream instantly.", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(context, "Please paste a magnet link or hash", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryViolet),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Cache", color = TextPrimary, fontSize = 11.sp)
+                        }
+                    }
+                }
+            }
+        }
+
+        // ==========================================
+        // SECTION: TRAKT & ANILIST SCROBBLER
+        // ==========================================
+        Text(
+            text = "TRAKT & ANILIST SCROBBLE",
+            color = PrimaryViolet,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
+        )
+
+        Card(
+            shape = RoundedCornerShape(14.dp),
+            colors = CardDefaults.cardColors(containerColor = SurfaceVariantDark)
+        ) {
+            Column(
+                modifier = Modifier.padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Sync, contentDescription = null, tint = SecondaryCyan, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Automatic Trakt.tv Scrobble", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        }
+                        Text("Auto-log watched minutes and scrobble episodes to Trakt profile", color = TextMuted, fontSize = 11.sp)
+                    }
+
+                    Switch(
+                        checked = watchStats.traktScrobbleEnabled,
+                        onCheckedChange = { viewModel.toggleTraktScrobble(it) },
+                        colors = SwitchDefaults.colors(checkedThumbColor = TextPrimary, checkedTrackColor = PrimaryViolet)
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text("Linked Trakt Account", color = TextMuted, fontSize = 11.sp)
+                        Text("@${watchStats.traktUsername}", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                    }
+
+                    OutlinedButton(
+                        onClick = {
+                            viewModel.syncTraktCloud()
+                            Toast.makeText(context, "Trakt library synced with cloud!", Toast.LENGTH_SHORT).show()
+                        },
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text("Sync Now", color = SecondaryCyan, fontSize = 11.sp)
+                    }
+                }
+            }
+        }
+
+        // ==========================================
+        // SECTION: PARENTAL CONTROLS & CONTENT FILTER
+        // ==========================================
+        Text(
+            text = "PARENTAL CONTROLS & CONTENT FILTER",
+            color = SecondaryCyan,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
+        )
+
+        Card(
+            shape = RoundedCornerShape(14.dp),
+            colors = CardDefaults.cardColors(containerColor = SurfaceVariantDark)
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Security, contentDescription = null, tint = PrimaryViolet, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Kids Safe Mode", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        }
+                        Text("Filter out explicit, mature, or unrated adult content", color = TextMuted, fontSize = 11.sp)
+                    }
+
+                    Switch(
+                        checked = kidsModeEnabled,
+                        onCheckedChange = { viewModel.toggleKidsMode(it) },
+                        colors = SwitchDefaults.colors(checkedThumbColor = TextPrimary, checkedTrackColor = PrimaryViolet)
+                    )
+                }
             }
         }
 

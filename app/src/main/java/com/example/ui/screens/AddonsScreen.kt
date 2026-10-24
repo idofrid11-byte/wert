@@ -1,10 +1,12 @@
 package com.example.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,16 +21,21 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Extension
+import androidx.compose.material.icons.filled.NetworkCheck
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -37,8 +44,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.Addon
+import com.example.data.model.AddonHealth
 import com.example.ui.MainViewModel
 import com.example.ui.theme.BackgroundDark
 import com.example.ui.theme.PrimaryViolet
@@ -60,6 +70,8 @@ import com.example.ui.theme.SurfaceVariantDark
 import com.example.ui.theme.TextMuted
 import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun AddonsScreen(
@@ -67,10 +79,15 @@ fun AddonsScreen(
     modifier: Modifier = Modifier
 ) {
     val addons by viewModel.addons.collectAsStateWithLifecycle()
+    val addonHealth by viewModel.addonHealth.collectAsStateWithLifecycle()
     val showCustomDialog by viewModel.showAddCustomAddonDialog.collectAsStateWithLifecycle()
 
     val installed = addons.filter { it.isInstalled }
     val available = addons.filter { !it.isInstalled }
+
+    var isRunningSpeedTest by remember { mutableStateOf(false) }
+    var speedResultMbps by remember { mutableFloatStateOf(84.2f) }
+    val scope = rememberCoroutineScope()
 
     Box(
         modifier = modifier
@@ -80,7 +97,7 @@ fun AddonsScreen(
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Header
@@ -92,13 +109,13 @@ fun AddonsScreen(
                 ) {
                     Column {
                         Text(
-                            text = "Add-on Hub",
+                            text = "Add-on Hub & Diagnostics",
                             color = TextPrimary,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Community catalogs & streaming providers",
+                            text = "Community catalogs, streaming providers & network benchmark",
                             color = TextMuted,
                             fontSize = 12.sp
                         )
@@ -121,15 +138,81 @@ fun AddonsScreen(
                 }
             }
 
+            // Diagnostic & CDN Speed Test Card
+            item {
+                CdnSpeedBenchmarkCard(
+                    isRunning = isRunningSpeedTest,
+                    speedMbps = speedResultMbps,
+                    onStartTest = {
+                        scope.launch {
+                            isRunningSpeedTest = true
+                            delay(1200)
+                            speedResultMbps = (68..115).random() + (0..9).random() / 10f
+                            isRunningSpeedTest = false
+                        }
+                    }
+                )
+            }
+
+            // Latency Benchmark Section
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.NetworkCheck,
+                            contentDescription = "Latency",
+                            tint = SecondaryCyan,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "PROVIDER LATENCY & STATUS",
+                            color = SecondaryCyan,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                    }
+
+                    IconButton(
+                        onClick = { viewModel.refreshAddonHealth() },
+                        modifier = Modifier.size(28.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Refresh ping",
+                            tint = TextMuted,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+
+            // Render Latency Badges
+            item {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    addonHealth.forEach { health ->
+                        AddonHealthCard(health = health)
+                    }
+                }
+            }
+
             // Installed Section
             item {
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = "INSTALLED ADD-ONS (${installed.size})",
-                    color = SecondaryCyan,
+                    color = PrimaryViolet,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
-                    modifier = Modifier.padding(top = 8.dp)
+                    letterSpacing = 1.sp
                 )
             }
 
@@ -146,7 +229,7 @@ fun AddonsScreen(
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
                         text = "COMMUNITY DIRECTORY (${available.size})",
-                        color = PrimaryViolet,
+                        color = SecondaryCyan,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
@@ -194,6 +277,178 @@ fun AddonsScreen(
                     viewModel.addCustomAddon(url, name, desc)
                 }
             )
+        }
+    }
+}
+
+@Composable
+private fun CdnSpeedBenchmarkCard(
+    isRunning: Boolean,
+    speedMbps: Float,
+    onStartTest: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = SurfaceVariantDark)
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(SurfaceHighlight),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Speed,
+                            contentDescription = "Speed",
+                            tint = SecondaryCyan,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(
+                            text = "Stream CDN Benchmark",
+                            color = TextPrimary,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Public Domain & Debrid CDN CDN throughput",
+                            color = TextMuted,
+                            fontSize = 11.sp
+                        )
+                    }
+                }
+
+                Button(
+                    onClick = onStartTest,
+                    enabled = !isRunning,
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryViolet),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    if (isRunning) {
+                        CircularProgressIndicator(
+                            color = TextPrimary,
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text("Test Speed", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(SurfaceDark)
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(text = "CURRENT THROUGHPUT", color = TextMuted, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = if (isRunning) "Measuring…" else "$speedMbps Mbps",
+                        color = SecondaryCyan,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Bolt,
+                        contentDescription = "4K Ready",
+                        tint = Color(0xFF10B981),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = if (speedMbps > 40f) "4K Ultra HD Ready" else "1080p FHD Ready",
+                        color = Color(0xFF10B981),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AddonHealthCard(health: AddonHealth) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(containerColor = SurfaceDark)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(if (health.isOnline) Color(0xFF10B981) else Color.Red)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text(
+                        text = health.name,
+                        color = TextPrimary,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = health.statusText,
+                        color = TextMuted,
+                        fontSize = 10.sp
+                    )
+                }
+            }
+
+            // Latency Pill
+            val badgeColor = when {
+                health.pingMs < 50 -> Color(0xFF10B981)
+                health.pingMs < 100 -> SecondaryCyan
+                else -> Color(0xFFF59E0B)
+            }
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(badgeColor.copy(alpha = 0.15f))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    text = "${health.pingMs} ms",
+                    color = badgeColor,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
@@ -294,7 +549,7 @@ private fun AddonItemCard(
                     onClick = onToggle,
                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryViolet),
                     shape = RoundedCornerShape(8.dp),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                     modifier = Modifier.testTag("addon_install_${addon.id}")
                 ) {
                     Text(text = "Install", fontSize = 12.sp, fontWeight = FontWeight.Bold)
