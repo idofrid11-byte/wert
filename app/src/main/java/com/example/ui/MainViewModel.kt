@@ -91,6 +91,11 @@ class MainViewModel(
     private val _isSearching = MutableStateFlow(false)
     val isSearching: StateFlow<Boolean> = _isSearching.asStateFlow()
 
+    private val _searchHistory = MutableStateFlow(listOf("Stranger Things", "Dune 2", "Arcane", "HBO Max", "4K HDR"))
+    val searchHistory: StateFlow<List<String>> = _searchHistory.asStateFlow()
+
+    private var searchJob: Job? = null
+
     private val _trendingList = MutableStateFlow<List<MediaItem>>(emptyList())
     val trendingList: StateFlow<List<MediaItem>> = _trendingList.asStateFlow()
 
@@ -244,19 +249,48 @@ class MainViewModel(
         _selectedFilter.value = filter
     }
 
-    fun onSearchQueryChanged(query: String) {
+    fun onSearchQueryChanged(query: String, immediate: Boolean = false) {
         _searchQuery.value = query
         if (query.isBlank()) {
+            searchJob?.cancel()
             _searchResults.value = emptyList()
             _isSearching.value = false
             return
         }
-        viewModelScope.launch {
-            _isSearching.value = true
+        _isSearching.value = true
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            if (!immediate) {
+                delay(300L) // 300ms debounce
+            }
             val results = repository.search(query)
             _searchResults.value = results
             _isSearching.value = false
         }
+    }
+
+    fun submitSearch(query: String) {
+        addToSearchHistory(query)
+        onSearchQueryChanged(query, immediate = true)
+    }
+
+    fun addToSearchHistory(query: String) {
+        val trimmed = query.trim()
+        if (trimmed.isNotBlank()) {
+            _searchHistory.value = listOf(trimmed) + _searchHistory.value.filter { !it.equals(trimmed, ignoreCase = true) }.take(9)
+        }
+    }
+
+    fun removeSearchHistoryItem(query: String) {
+        _searchHistory.value = _searchHistory.value.filter { it != query }
+    }
+
+    fun clearSearchHistory() {
+        _searchHistory.value = emptyList()
+    }
+
+    fun clearSearch() {
+        onSearchQueryChanged("", immediate = true)
     }
 
     fun loadCatalogs() {
@@ -418,6 +452,10 @@ class MainViewModel(
     fun setOutputRouting(routing: String) = repository.updateAudioSettings(audioSettings.value.copy(outputRouting = routing))
     fun setPreAmpGain(gainDb: Int) = repository.updateAudioSettings(audioSettings.value.copy(preAmpGainDb = gainDb))
     fun togglePitchCorrection(enabled: Boolean) = repository.updateAudioSettings(audioSettings.value.copy(pitchCorrectionEnabled = enabled))
+    fun toggleNightModeVolumeLeveling(enabled: Boolean) = repository.updateAudioSettings(audioSettings.value.copy(nightModeVolumeLeveling = enabled))
+    fun setAudioPassthrough(passthrough: String) = repository.updateAudioSettings(audioSettings.value.copy(audioPassthrough = passthrough))
+    fun togglePreferredHebrewAudio(enabled: Boolean) = repository.updateAudioSettings(audioSettings.value.copy(preferredHebrewAudio = enabled))
+    fun setAudioBalance(balance: Float) = repository.updateAudioSettings(audioSettings.value.copy(audioBalance = balance))
 
     // Subtitle Settings
     fun setSubtitleTrack(trackId: String) = repository.updateSubtitleSettings(subtitleSettings.value.copy(selectedTrackId = trackId))
@@ -434,6 +472,11 @@ class MainViewModel(
     fun setSubtitleSafeInset(insetDp: Int) = repository.updateSubtitleSettings(subtitleSettings.value.copy(bottomSafeInsetDp = insetDp))
     fun toggleForceUppercase(force: Boolean) = repository.updateSubtitleSettings(subtitleSettings.value.copy(forceUppercase = force))
     fun setSubtitleProvider(provider: String) = repository.updateSubtitleSettings(subtitleSettings.value.copy(activeSubProvider = provider))
+    fun togglePreferredHebrewSubtitles(enabled: Boolean) = repository.updateSubtitleSettings(subtitleSettings.value.copy(preferredHebrewSubtitles = enabled))
+    fun toggleDualSubtitles(enabled: Boolean) = repository.updateSubtitleSettings(subtitleSettings.value.copy(dualSubtitlesEnabled = enabled))
+    fun setSubtitleEncoding(encoding: String) = repository.updateSubtitleSettings(subtitleSettings.value.copy(subtitleEncoding = encoding))
+    fun toggleHebrewRtlOptimization(enabled: Boolean) = repository.updateSubtitleSettings(subtitleSettings.value.copy(cjkHebrewRtlOptimization = enabled))
+    fun setSubtitleShadowBlur(blur: String) = repository.updateSubtitleSettings(subtitleSettings.value.copy(textShadowBlur = blur))
 
     // Offline Downloads
     fun startDownload(media: MediaItem, stream: MediaStream) {

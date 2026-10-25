@@ -117,11 +117,15 @@ data class AudioPlaybackSettings(
     val dynamicRangeCompression: String = "Medium", // "Off", "Light", "Medium", "Heavy"
     val pitchCorrectionEnabled: Boolean = true,
     val preAmpGainDb: Int = 0, // -12dB to +12dB
-    val outputRouting: String = "Auto (Speaker/Bluetooth)" // "Auto", "Phone Speaker", "Wired/USB-C", "Bluetooth Low-Latency", "Optical/HDMI Passthrough"
+    val outputRouting: String = "Auto (Speaker/Bluetooth)", // "Auto", "Phone Speaker", "Wired/USB-C", "Bluetooth Low-Latency", "Optical/HDMI Passthrough"
+    val nightModeVolumeLeveling: Boolean = true, // Auto levels loud action & quiet dialogues
+    val audioPassthrough: String = "Auto", // "Auto", "PCM Stereo", "Dolby Digital (AC3)", "Dolby Digital Plus (E-AC3)", "DTS-HD / Atmos Bitstream"
+    val preferredHebrewAudio: Boolean = false, // Auto-prefer Hebrew dubbing when available
+    val audioBalance: Float = 0f // -1.0f (Full Left) to +1.0f (Full Right)
 )
 
 data class SubtitlePlaybackSettings(
-    val selectedTrackId: String = "en_sub", // "none", "en_sub", "es_sub", "fr_sub", etc.
+    val selectedTrackId: String = "he_sub", // default to Hebrew subtitles "he_sub", "en_sub", etc.
     val secondaryTrackId: String = "none",
     val subtitleDelayMs: Int = 0, // -2000ms to +2000ms
     val textSizeSp: Int = 18,
@@ -135,7 +139,12 @@ data class SubtitlePlaybackSettings(
     val boxOpacityPercent: Int = 75, // 0 to 100%
     val bottomSafeInsetDp: Int = 24, // 0, 16, 24, 36, 48
     val forceUppercase: Boolean = false,
-    val activeSubProvider: String = "OpenSubtitles v3" // "OpenSubtitles v3", "Subdl", "Addic7ed", "BSPlayer"
+    val activeSubProvider: String = "OpenSubtitles v3", // "OpenSubtitles v3", "Subdl", "Addic7ed", "BSPlayer"
+    val preferredHebrewSubtitles: Boolean = true, // Auto-prefer Hebrew subtitles
+    val dualSubtitlesEnabled: Boolean = false, // Dual subtitles simultaneous display
+    val subtitleEncoding: String = "UTF-8", // "UTF-8", "Windows-1255 (Hebrew)", "ISO-8859-8"
+    val cjkHebrewRtlOptimization: Boolean = true, // RTL Hebrew alignment and punctuation fix
+    val textShadowBlur: String = "Heavy" // "None", "Subtle", "Heavy", "Outline"
 )
 
 data class CastMember(

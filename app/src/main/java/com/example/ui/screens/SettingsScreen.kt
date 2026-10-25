@@ -226,13 +226,13 @@ fun SettingsScreen(
                     ) {
                         Icon(Icons.Default.VpnKey, contentDescription = null, tint = TextPrimary, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Change Password", color = TextPrimary, fontSize = 11.sp)
+                        Text("שנה סיסמה", color = TextPrimary, fontSize = 11.sp)
                     }
 
                     Button(
                         onClick = {
                             viewModel.logout()
-                            Toast.makeText(context, "Logged out. Please sign in to continue.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "התנתקת בהצלחה. יש להתחבר או ליצור חשבון כדי להמשיך.", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935).copy(alpha = 0.25f)),
                         shape = RoundedCornerShape(8.dp),
@@ -242,7 +242,7 @@ fun SettingsScreen(
                     ) {
                         Icon(Icons.Default.Logout, contentDescription = null, tint = Color(0xFFFF8A80), modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Log Out", color = Color(0xFFFF8A80), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text("התנתק (Log Out)", color = Color(0xFFFF8A80), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -467,7 +467,7 @@ fun SettingsScreen(
         // SECTION: AUDIO & SOUND
         // ==========================================
         Text(
-            text = "AUDIO & SOUND ENHANCEMENT",
+            text = "AUDIO & SOUND ENHANCEMENT / הגדרות שמע ואודיו",
             color = PrimaryViolet,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
@@ -492,9 +492,9 @@ fun SettingsScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.RecordVoiceOver, contentDescription = null, tint = PrimaryViolet, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Speech & Dialogue Clarity", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                            Text("Speech & Dialogue Clarity (הדגשת דיבור)", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                         }
-                        Text("Amplifies vocal frequencies and suppresses loud action peaks", color = TextMuted, fontSize = 11.sp)
+                        Text("מגביר תדרי דיבור ומנמיך פיצוצים ורעשי רקע חזקים", color = TextMuted, fontSize = 11.sp)
                     }
                     Switch(
                         checked = audioSettings.speechClarity,
@@ -504,13 +504,52 @@ fun SettingsScreen(
                     )
                 }
 
+                // Night Mode Volume Leveling
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.GraphicEq, contentDescription = null, tint = SecondaryCyan, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Night Mode Volume Leveling (מצב לילה שקט)", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                        }
+                        Text("איזון אוטומטי של טווח דינמי כדי למנוע קפיצות ווליום חדות בלילה", color = TextMuted, fontSize = 11.sp)
+                    }
+                    Switch(
+                        checked = audioSettings.nightModeVolumeLeveling,
+                        onCheckedChange = { viewModel.toggleNightModeVolumeLeveling(it) },
+                        colors = SwitchDefaults.colors(checkedThumbColor = TextPrimary, checkedTrackColor = PrimaryViolet),
+                        modifier = Modifier.testTag("switch_night_mode_leveling")
+                    )
+                }
+
+                // Prefer Hebrew Audio Dubbing
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("דיבוב בעברית כברירת מחדל (Hebrew Audio)", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                        Text("בחר אוטומטית ברצועת שמע בעברית כאשר זמינה בסרטי ילדים ואנימציה", color = TextMuted, fontSize = 11.sp)
+                    }
+                    Switch(
+                        checked = audioSettings.preferredHebrewAudio,
+                        onCheckedChange = { viewModel.togglePreferredHebrewAudio(it) },
+                        colors = SwitchDefaults.colors(checkedThumbColor = TextPrimary, checkedTrackColor = PrimaryViolet)
+                    )
+                }
+
                 // Volume Boost
                 Column {
-                    Text("Volume Boost Multiplier", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-                    Text("Boost quiet streams above maximum system volume", color = TextMuted, fontSize = 11.sp)
+                    Text("Volume Boost Multiplier (הגברת עוצמת שמע)", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                    Text("הגברת שמע עבור סטרימים חלשים מעבר למקסימום המערכת", color = TextMuted, fontSize = 11.sp)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf(0 to "100% (Normal)", 1 to "150%", 2 to "200%", 3 to "300% (Max)").forEach { (lvl, lbl) ->
+                        listOf(0 to "100% (רגיל)", 1 to "150%", 2 to "200%", 3 to "300% (מקסימום)").forEach { (lvl, lbl) ->
                             val isSelected = audioSettings.audioBoostLevel == lvl
                             Box(
                                 modifier = Modifier
@@ -522,6 +561,28 @@ fun SettingsScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(lbl, color = if (isSelected) TextPrimary else TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+
+                // Audio Passthrough Mode
+                Column {
+                    Text("Digital Audio Passthrough (מעבר שמע דיגיטלי)", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        listOf("Auto" to "אוטומטי", "PCM Stereo" to "סטריאו PCM", "Dolby Digital" to "Dolby AC3", "Atmos Bitstream" to "Dolby Atmos").forEach { (modeKey, lbl) ->
+                            val isPassSelected = audioSettings.audioPassthrough == modeKey
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (isPassSelected) PrimaryViolet else SurfaceHighlight)
+                                    .clickable { viewModel.setAudioPassthrough(modeKey) }
+                                    .padding(vertical = 6.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(lbl, color = if (isPassSelected) TextPrimary else TextSecondary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -539,7 +600,7 @@ fun SettingsScreen(
                             Spacer(modifier = Modifier.width(6.dp))
                             Text("Spatial Surround 5.1 / Atmos", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                         }
-                        Text("Multi-channel digital audio passthrough & virtualization", color = TextMuted, fontSize = 11.sp)
+                        Text("הדמיית סראונד רב-ערוצי באוזניות ורמקולים", color = TextMuted, fontSize = 11.sp)
                     }
                     Switch(
                         checked = audioSettings.surroundSoundEnabled,
@@ -550,10 +611,10 @@ fun SettingsScreen(
 
                 // Preferred Audio Language
                 Column {
-                    Text("Preferred Audio Language", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                    Text("שפת שמע מועדפת (Preferred Audio Language)", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(6.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        listOf("en_orig" to "English", "es_dub" to "Spanish", "fr_dub" to "French", "ja_orig" to "Japanese", "de_dub" to "German").forEach { (tid, name) ->
+                        listOf("he_dub" to "עברית", "en_orig" to "English", "es_dub" to "Español", "fr_dub" to "Français", "ja_orig" to "日本語").forEach { (tid, name) ->
                             val isTrackSelected = audioSettings.selectedTrackId == tid
                             Box(
                                 modifier = Modifier
@@ -571,7 +632,7 @@ fun SettingsScreen(
                 // Audio Delay Sync Offset
                 Column {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Audio Delay / Lip-Sync", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                        Text("Audio Delay / Lip-Sync (סנכרון שפתיים)", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                         Text("${if (audioSettings.audioDelayMs >= 0) "+${audioSettings.audioDelayMs}" else "${audioSettings.audioDelayMs}"} ms", color = SecondaryCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                     Slider(
@@ -589,7 +650,7 @@ fun SettingsScreen(
         // SECTION: SUBTITLES & CAPTIONS
         // ==========================================
         Text(
-            text = "SUBTITLES & CAPTIONS",
+            text = "SUBTITLES & CAPTIONS / הגדרות כתוביות ותרגום",
             color = SecondaryCyan,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
@@ -614,9 +675,9 @@ fun SettingsScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.ClosedCaption, contentDescription = null, tint = SecondaryCyan, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Auto-Load Subtitles", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                            Text("טעינת כתוביות אוטומטית (Auto-Load)", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                         }
-                        Text("Automatically load matched subtitles from OpenSubtitles v3", color = TextMuted, fontSize = 11.sp)
+                        Text("טעינה אוטומטית של תרגום מותאם מ-OpenSubtitles v3 ו-Torec", color = TextMuted, fontSize = 11.sp)
                     }
                     Switch(
                         checked = subtitleSettings.autoSelectSubtitles,
@@ -625,12 +686,63 @@ fun SettingsScreen(
                     )
                 }
 
+                // Default Hebrew Subtitles Priority
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("עדיפות עליונה לכתוביות בעברית (Hebrew Priority)", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                        Text("הצג כתוביות בעברית באופן אוטומטי בכל תחילת ניגון", color = TextMuted, fontSize = 11.sp)
+                    }
+                    Switch(
+                        checked = subtitleSettings.preferredHebrewSubtitles,
+                        onCheckedChange = { viewModel.togglePreferredHebrewSubtitles(it) },
+                        colors = SwitchDefaults.colors(checkedThumbColor = TextPrimary, checkedTrackColor = PrimaryViolet)
+                    )
+                }
+
+                // Hebrew RTL and Punctuation Fix
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("תיקון כיווניות ופיסוק לעברית (BiDi RTL Fix)", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                        Text("יישור מימין לשמאל ותיקון סימני שאלה, פסיקים ומספרים בכתוביות", color = TextMuted, fontSize = 11.sp)
+                    }
+                    Switch(
+                        checked = subtitleSettings.cjkHebrewRtlOptimization,
+                        onCheckedChange = { viewModel.toggleHebrewRtlOptimization(it) },
+                        colors = SwitchDefaults.colors(checkedThumbColor = TextPrimary, checkedTrackColor = PrimaryViolet)
+                    )
+                }
+
+                // Dual Subtitles Toggle
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("כתוביות כפולות (עברית + אנגלית במקביל)", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                        Text("הצגת שתי שפות במקביל ללמידה ושיפור אנגלית", color = TextMuted, fontSize = 11.sp)
+                    }
+                    Switch(
+                        checked = subtitleSettings.dualSubtitlesEnabled,
+                        onCheckedChange = { viewModel.toggleDualSubtitles(it) },
+                        colors = SwitchDefaults.colors(checkedThumbColor = TextPrimary, checkedTrackColor = PrimaryViolet)
+                    )
+                }
+
                 // Primary Subtitle Language
                 Column {
-                    Text("Primary Subtitle Language", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                    Text("שפת כתוביות ראשית (Primary Subtitle)", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(6.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        listOf("en_sub" to "English", "es_sub" to "Spanish", "fr_sub" to "French", "ja_sub" to "Japanese", "none" to "Off").forEach { (tid, name) ->
+                        listOf("he_sub" to "עברית", "en_sub" to "English", "es_sub" to "Spanish", "fr_sub" to "French", "none" to "ללא (Off)").forEach { (tid, name) ->
                             val isChosen = subtitleSettings.selectedTrackId == tid
                             Box(
                                 modifier = Modifier
@@ -645,22 +757,24 @@ fun SettingsScreen(
                     }
                 }
 
-                // Dual Subtitles (Secondary Track)
+                // Subtitle Encoding
                 Column {
-                    Text("Dual Subtitles (Language Learning)", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-                    Text("Display a second language track simultaneously", color = TextMuted, fontSize = 11.sp)
+                    Text("קידוד כתוביות (Subtitle Encoding)", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                    Text("למניעת ג'יבריש וסימנים משובשים בקבצי SRT ישנים", color = TextMuted, fontSize = 11.sp)
                     Spacer(modifier = Modifier.height(6.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        listOf("none" to "Off", "es_sub" to "Spanish", "ja_sub" to "Japanese", "fr_sub" to "French").forEach { (tid, name) ->
-                            val isSecChosen = subtitleSettings.secondaryTrackId == tid
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf("UTF-8" to "UTF-8 (מומלץ)", "Windows-1255" to "Windows-1255 (עברית)", "ISO-8859-8" to "ISO-8859-8").forEach { (encKey, lbl) ->
+                            val isEnc = subtitleSettings.subtitleEncoding == encKey
                             Box(
                                 modifier = Modifier
+                                    .weight(1f)
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(if (isSecChosen) SecondaryCyan.copy(alpha = 0.3f) else SurfaceHighlight)
-                                    .clickable { viewModel.setSecondarySubtitleTrack(tid) }
-                                    .padding(horizontal = 8.dp, vertical = 6.dp)
+                                    .background(if (isEnc) PrimaryViolet else SurfaceHighlight)
+                                    .clickable { viewModel.setSubtitleEncoding(encKey) }
+                                    .padding(vertical = 7.dp),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Text(name, color = if (isSecChosen) SecondaryCyan else TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text(lbl, color = if (isEnc) TextPrimary else TextSecondary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -668,10 +782,10 @@ fun SettingsScreen(
 
                 // Subtitle Size
                 Column {
-                    Text("Subtitle Size", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                    Text("גודל גופן כתוביות (Font Size)", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(6.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf(14 to "Small", 18 to "Medium", 22 to "Large", 26 to "Extra Large").forEach { (sz, lbl) ->
+                        listOf(14 to "קטן (14)", 18 to "רגיל (18)", 22 to "גדול (22)", 26 to "ענק (26)").forEach { (sz, lbl) ->
                             val isSize = subtitleSettings.textSizeSp == sz
                             Box(
                                 modifier = Modifier
@@ -690,14 +804,14 @@ fun SettingsScreen(
 
                 // Subtitle Color
                 Column {
-                    Text("Font Color", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                    Text("צבע גופן (Font Color)", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(6.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         listOf(
-                            0xFFFFFFFF to "White",
-                            0xFFFFEB3B to "Yellow",
-                            0xFF00E5FF to "Cyan",
-                            0xFF69F0AE to "Mint"
+                            0xFFFFFFFF to "לבן / White",
+                            0xFFFFEB3B to "צהוב קולנוע",
+                            0xFF00E5FF to "טורקיז / Cyan",
+                            0xFF69F0AE to "ירוק מנטה"
                         ).forEach { (colorVal, lbl) ->
                             val isCol = subtitleSettings.textColorHex == colorVal
                             Box(
@@ -722,19 +836,19 @@ fun SettingsScreen(
                                             .background(Color(colorVal))
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Text(lbl, color = TextPrimary, fontSize = 11.sp)
+                                    Text(lbl, color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
                     }
                 }
 
-                // Background Style
+                // Background & Shadow Style
                 Column {
-                    Text("Background Style", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                    Text("עיצוב רקע והצללה (Background & Shadow)", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(6.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf("box" to "Black Box", "shadow" to "Drop Shadow", "none" to "Transparent").forEach { (styleKey, lbl) ->
+                        listOf("box" to "קופסה שחורה", "shadow" to "צל שחור מודגש", "none" to "שקוף ללא רקע").forEach { (styleKey, lbl) ->
                             val isBg = subtitleSettings.backgroundStyle == styleKey
                             Box(
                                 modifier = Modifier
@@ -751,32 +865,10 @@ fun SettingsScreen(
                     }
                 }
 
-                // Vertical Screen Position
-                Column {
-                    Text("Vertical Position", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf("bottom" to "Bottom (Standard)", "top" to "Top of Screen").forEach { (posKey, lbl) ->
-                            val isPos = subtitleSettings.verticalPosition == posKey
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(if (isPos) PrimaryViolet else SurfaceHighlight)
-                                    .clickable { viewModel.setSubtitlePosition(posKey) }
-                                    .padding(vertical = 8.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(lbl, color = if (isPos) TextPrimary else TextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-                }
-
-                // Subtitle Delay Offset
+                // Subtitle Timing Delay Offset
                 Column {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Subtitle Timing Delay", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                        Text("השהיית / הקדמת כתוביות (Timing Offset)", color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                         Text("${if (subtitleSettings.subtitleDelayMs >= 0) "+${subtitleSettings.subtitleDelayMs}" else "${subtitleSettings.subtitleDelayMs}"} ms", color = SecondaryCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                     Slider(

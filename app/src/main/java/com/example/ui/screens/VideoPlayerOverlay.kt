@@ -838,6 +838,8 @@ private fun AudioSettingsModal(
     var audioDelay by remember { mutableStateOf(settings.audioDelayMs) }
     var speechClarity by remember { mutableStateOf(settings.speechClarity) }
     var surroundSound by remember { mutableStateOf(settings.surroundSoundEnabled) }
+    var nightModeLeveling by remember { mutableStateOf(settings.nightModeVolumeLeveling) }
+    var passthrough by remember { mutableStateOf(settings.audioPassthrough) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -856,7 +858,7 @@ private fun AudioSettingsModal(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                Text("AUDIO TRACK", color = SecondaryCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text("AUDIO TRACK / רצועת שמע", color = SecondaryCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 tracks.forEach { track ->
                     val isSelected = selectedTrack == track.id
                     Row(
@@ -881,6 +883,28 @@ private fun AudioSettingsModal(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
+                // Night Mode Volume Leveling
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(SurfaceVariantDark)
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Night Mode Volume Leveling", color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                        Text("מצב לילה שקט: מנמיך אפקטים רועשים ומבליט לחישות", color = TextMuted, fontSize = 11.sp)
+                    }
+                    Switch(
+                        checked = nightModeLeveling,
+                        onCheckedChange = { nightModeLeveling = it },
+                        colors = SwitchDefaults.colors(checkedThumbColor = TextPrimary, checkedTrackColor = PrimaryViolet)
+                    )
+                }
+
+                // Speech / Dialogue Boost
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -892,7 +916,7 @@ private fun AudioSettingsModal(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Speech & Dialogue Boost", color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-                        Text("Enhances whispered speech and compresses dynamic range for night listening", color = TextMuted, fontSize = 11.sp)
+                        Text("Enhances whispered speech and vocals", color = TextMuted, fontSize = 11.sp)
                     }
                     Switch(
                         checked = speechClarity,
@@ -901,6 +925,7 @@ private fun AudioSettingsModal(
                     )
                 }
 
+                // Volume Boost
                 Column {
                     Text("VOLUME BOOST", color = SecondaryCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                     Spacer(modifier = Modifier.height(6.dp))
@@ -922,6 +947,29 @@ private fun AudioSettingsModal(
                     }
                 }
 
+                // Audio Passthrough Mode
+                Column {
+                    Text("DIGITAL PASSTHROUGH", color = SecondaryCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        listOf("Auto" to "Auto", "PCM Stereo" to "PCM", "Dolby Digital" to "Dolby AC3", "Atmos Bitstream" to "Atmos").forEach { (mode, lbl) ->
+                            val isMode = passthrough == mode
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (isMode) PrimaryViolet else SurfaceVariantDark)
+                                    .clickable { passthrough = mode }
+                                    .padding(vertical = 6.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(lbl, color = if (isMode) TextPrimary else TextSecondary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+
+                // Audio Delay Sync Offset
                 Column {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -939,6 +987,7 @@ private fun AudioSettingsModal(
                     )
                 }
 
+                // Spatial / Surround Sound
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -950,7 +999,7 @@ private fun AudioSettingsModal(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Spatial / Surround Audio", color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-                        Text("Dolby Digital & multi-channel headphone virtualization", color = TextMuted, fontSize = 11.sp)
+                        Text("Dolby Digital & multi-channel virtualization", color = TextMuted, fontSize = 11.sp)
                     }
                     Switch(
                         checked = surroundSound,
@@ -969,7 +1018,9 @@ private fun AudioSettingsModal(
                             audioBoostLevel = boostLevel,
                             audioDelayMs = audioDelay,
                             speechClarity = speechClarity,
-                            surroundSoundEnabled = surroundSound
+                            surroundSoundEnabled = surroundSound,
+                            nightModeVolumeLeveling = nightModeLeveling,
+                            audioPassthrough = passthrough
                         )
                     )
                 },
@@ -999,6 +1050,8 @@ private fun SubtitleSettingsModal(
     var textColor by remember { mutableStateOf(settings.textColorHex) }
     var bgStyle by remember { mutableStateOf(settings.backgroundStyle) }
     var position by remember { mutableStateOf(settings.verticalPosition) }
+    var dualSubtitles by remember { mutableStateOf(settings.dualSubtitlesEnabled) }
+    var hebrewRtl by remember { mutableStateOf(settings.cjkHebrewRtlOptimization) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -1017,7 +1070,7 @@ private fun SubtitleSettingsModal(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                Text("SUBTITLE LANGUAGE", color = SecondaryCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text("SUBTITLE LANGUAGE / שפת כתוביות", color = SecondaryCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                 tracks.forEach { track ->
                     val isSelected = selectedTrack == track.id
                     Row(
@@ -1043,6 +1096,48 @@ private fun SubtitleSettingsModal(
                 }
 
                 Spacer(modifier = Modifier.height(4.dp))
+
+                // Dual Subtitles Toggle
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(SurfaceVariantDark)
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Dual Subtitles (עברית + אנגלית)", color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                        Text("הצג כתוביות כפולות במקביל", color = TextMuted, fontSize = 11.sp)
+                    }
+                    Switch(
+                        checked = dualSubtitles,
+                        onCheckedChange = { dualSubtitles = it },
+                        colors = SwitchDefaults.colors(checkedThumbColor = TextPrimary, checkedTrackColor = PrimaryViolet)
+                    )
+                }
+
+                // Hebrew RTL BiDi Alignment Fix
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(SurfaceVariantDark)
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("תיקון כיווניות עברית (RTL Fix)", color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                        Text("תיקון סדר פיסוק ויישור עברית", color = TextMuted, fontSize = 11.sp)
+                    }
+                    Switch(
+                        checked = hebrewRtl,
+                        onCheckedChange = { hebrewRtl = it },
+                        colors = SwitchDefaults.colors(checkedThumbColor = TextPrimary, checkedTrackColor = PrimaryViolet)
+                    )
+                }
 
                 Column {
                     Row(
@@ -1175,7 +1270,9 @@ private fun SubtitleSettingsModal(
                             textSizeSp = textSize,
                             textColorHex = textColor,
                             backgroundStyle = bgStyle,
-                            verticalPosition = position
+                            verticalPosition = position,
+                            dualSubtitlesEnabled = dualSubtitles,
+                            cjkHebrewRtlOptimization = hebrewRtl
                         )
                     )
                 },

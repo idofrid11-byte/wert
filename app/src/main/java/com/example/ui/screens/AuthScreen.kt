@@ -28,7 +28,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockPerson
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Security
@@ -45,16 +47,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -102,6 +99,10 @@ fun AuthScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showForgotPasswordDialog by remember { mutableStateOf(false) }
 
+    val emailRegex = remember {
+        Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$")
+    }
+
     // Password strength calculation
     val passwordStrength = remember(password) {
         when {
@@ -114,9 +115,9 @@ fun AuthScreen(
     val passwordStrengthLabel = remember(passwordStrength) {
         when {
             passwordStrength == 0f -> ""
-            passwordStrength <= 0.35f -> "Weak (min 6 chars)"
-            passwordStrength <= 0.7f -> "Good"
-            else -> "Strong Password"
+            passwordStrength <= 0.35f -> "חלשה (מינימום 6 תווים) / Weak"
+            passwordStrength <= 0.7f -> "טובה / Good"
+            else -> "חזקה מאוד / Strong"
         }
     }
     val passwordStrengthColor = remember(passwordStrength) {
@@ -134,39 +135,39 @@ fun AuthScreen(
         val cleanUsername = username.trim()
 
         if (cleanEmail.isEmpty()) {
-            errorMessage = "Please enter your email address"
+            errorMessage = "נא להזין כתובת דוא\"ל / Please enter your email address"
             return
         }
-        if (!cleanEmail.contains("@") || !cleanEmail.contains(".")) {
-            errorMessage = "Please enter a valid email address (e.g. name@domain.com)"
+        if (!emailRegex.matches(cleanEmail)) {
+            errorMessage = "נא להזין כתובת דוא\"ל תקינה / Please enter a valid email address (e.g. name@domain.com)"
             return
         }
         if (cleanPassword.isEmpty()) {
-            errorMessage = "Please enter your password"
+            errorMessage = "נא להזין סיסמה / Please enter your password"
             return
         }
         if (cleanPassword.length < 6) {
-            errorMessage = "Password must be at least 6 characters long"
+            errorMessage = "הסיסמה חייבת להכיל לפחות 6 תווים / Password must be at least 6 characters long"
             return
         }
 
         if (isSignUpMode) {
             if (cleanUsername.isEmpty()) {
-                errorMessage = "Please choose a username"
+                errorMessage = "נא להזין שם משתמש / Please choose a username"
                 return
             }
             if (cleanPassword != confirmPassword.trim()) {
-                errorMessage = "Passwords do not match"
+                errorMessage = "הסיסמאות אינן תואמות / Passwords do not match"
                 return
             }
             if (!agreeToTerms) {
-                errorMessage = "Please accept the Terms of Service to continue"
+                errorMessage = "חובה לאשר את תנאי השימוש כדי להמשיך / Please accept the Terms of Service"
                 return
             }
-            Toast.makeText(context, "Account created successfully! Welcome to AetherStream", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "החשבון נוצר בהצלחה! ברוך הבא ל-AetherStream", Toast.LENGTH_SHORT).show()
             onAccountCreated(cleanEmail, cleanPassword, cleanUsername)
         } else {
-            Toast.makeText(context, "Signing in...", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "מתחבר... / Signing in...", Toast.LENGTH_SHORT).show()
             onLogin(cleanEmail, cleanPassword)
         }
     }
@@ -181,16 +182,16 @@ fun AuthScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 32.dp),
+                .padding(horizontal = 24.dp, vertical = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // App Brand Logo Icon
             Box(
                 modifier = Modifier
-                    .size(72.dp)
+                    .size(68.dp)
                     .clip(CircleShape)
                     .background(
                         Brush.linearGradient(
@@ -203,13 +204,13 @@ fun AuthScreen(
                     imageVector = Icons.Default.PlayArrow,
                     contentDescription = "AetherStream Logo",
                     tint = TextPrimary,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(38.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-            // Title and Subtitle
+            // Title
             Text(
                 text = "AetherStream",
                 color = TextPrimary,
@@ -217,15 +218,59 @@ fun AuthScreen(
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.sp
             )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Mandatory account required to sync addons, streams & library",
-                color = SecondaryCyan,
-                fontSize = 12.sp,
-                textAlign = TextAlign.Center
-            )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // MANDATORY NOTICE BANNER (In Hebrew & English as explicitly requested)
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = PrimaryViolet.copy(alpha = 0.18f)
+                ),
+                border = androidx.compose.foundation.BorderStroke(1.dp, PrimaryViolet.copy(alpha = 0.5f)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("mandatory_account_notice")
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(PrimaryViolet),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.LockPerson,
+                            contentDescription = "Account Required",
+                            tint = TextPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Column {
+                        Text(
+                            text = "חובה ליצור חשבון / Account Required",
+                            color = SecondaryCyan,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "השימוש באפליקציה מחייב יצירת חשבון באמצעות כתובת דוא\"ל וסיסמה. הנתונים נשמרים בענן ומסונכרנים.",
+                            color = TextSecondary,
+                            fontSize = 11.sp,
+                            lineHeight = 15.sp
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Mode Selector Tabs (Create Account vs Sign In)
             Card(
@@ -252,7 +297,7 @@ fun AuthScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Create Account",
+                            text = "יצירת חשבון (חובה)",
                             color = if (isSignUpMode) TextPrimary else TextMuted,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp
@@ -273,7 +318,7 @@ fun AuthScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Sign In",
+                            text = "התחברות לחשבון",
                             color = if (!isSignUpMode) TextPrimary else TextMuted,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp
@@ -282,7 +327,7 @@ fun AuthScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             // Form Card
             Card(
@@ -295,34 +340,49 @@ fun AuthScreen(
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     Text(
-                        text = if (isSignUpMode) "Register New Account" else "Welcome Back",
+                        text = if (isSignUpMode) "הרשמה ויצירת חשבון חדש" else "כניסה למשתמש רשום",
                         color = TextPrimary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
                     )
                     Text(
-                        text = if (isSignUpMode) "Enter your email & password to create your cloud streaming profile" else "Enter your email and password to access your watchlist and addons",
+                        text = if (isSignUpMode) "הזן כתובת דוא\"ל תקינה ובחר סיסמה מאובטחת כדי להתחיל לצפות" else "הזן את הדוא\"ל והסיסמה שלך כדי לגשת לפרופיל, תוספים ורשימות הצפייה",
                         color = TextMuted,
                         fontSize = 12.sp,
                         lineHeight = 16.sp
                     )
 
                     // Error Message Banner
-                    if (errorMessage != null) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFE53935).copy(alpha = 0.2f))
-                                .border(1.dp, Color(0xFFE53935), RoundedCornerShape(8.dp))
-                                .padding(10.dp)
-                        ) {
-                            Text(
-                                text = errorMessage ?: "",
-                                color = Color(0xFFFF8A80),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                    AnimatedVisibility(
+                        visible = errorMessage != null,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        if (errorMessage != null) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color(0xFFE53935).copy(alpha = 0.2f))
+                                    .border(1.dp, Color(0xFFE53935), RoundedCornerShape(8.dp))
+                                    .padding(10.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.ErrorOutline,
+                                        contentDescription = "Error",
+                                        tint = Color(0xFFFF8A80),
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = errorMessage ?: "",
+                                        color = Color(0xFFFF8A80),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
                         }
                     }
 
@@ -334,8 +394,8 @@ fun AuthScreen(
                                 username = it
                                 errorMessage = null
                             },
-                            label = { Text("Username") },
-                            placeholder = { Text("e.g. CinephileUser") },
+                            label = { Text("שם משתמש / Username *") },
+                            placeholder = { Text("לדוגמה: CinephileIL") },
                             leadingIcon = {
                                 Icon(Icons.Default.Person, contentDescription = null, tint = SecondaryCyan)
                             },
@@ -357,14 +417,14 @@ fun AuthScreen(
                         )
                     }
 
-                    // Email Field
+                    // Email Field (Mandatory)
                     OutlinedTextField(
                         value = email,
                         onValueChange = {
                             email = it
                             errorMessage = null
                         },
-                        label = { Text("Email Address") },
+                        label = { Text("כתובת דוא\"ל / Email Address *") },
                         placeholder = { Text("name@example.com") },
                         leadingIcon = {
                             Icon(Icons.Default.Email, contentDescription = null, tint = SecondaryCyan)
@@ -387,15 +447,15 @@ fun AuthScreen(
                             .testTag("input_email")
                     )
 
-                    // Password Field
+                    // Password Field (Mandatory)
                     OutlinedTextField(
                         value = password,
                         onValueChange = {
                             password = it
                             errorMessage = null
                         },
-                        label = { Text("Password") },
-                        placeholder = { Text("At least 6 characters") },
+                        label = { Text("סיסמה / Password *") },
+                        placeholder = { Text("לפחות 6 תווים / At least 6 chars") },
                         leadingIcon = {
                             Icon(Icons.Default.Lock, contentDescription = null, tint = SecondaryCyan)
                         },
@@ -403,7 +463,7 @@ fun AuthScreen(
                             IconButton(onClick = { isPasswordVisible = !isPasswordVisible }) {
                                 Icon(
                                     imageVector = if (isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = if (isPasswordVisible) "Hide password" else "Show password",
+                                    contentDescription = if (isPasswordVisible) "הסתר סיסמה" else "הצג סיסמה",
                                     tint = TextMuted
                                 )
                             }
@@ -435,7 +495,7 @@ fun AuthScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("Password strength", color = TextMuted, fontSize = 11.sp)
+                                Text("חוזק סיסמה:", color = TextMuted, fontSize = 11.sp)
                                 Text(passwordStrengthLabel, color = passwordStrengthColor, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
                             LinearProgressIndicator(
@@ -458,8 +518,8 @@ fun AuthScreen(
                                 confirmPassword = it
                                 errorMessage = null
                             },
-                            label = { Text("Confirm Password") },
-                            placeholder = { Text("Re-enter password") },
+                            label = { Text("אימות סיסמה / Confirm Password *") },
+                            placeholder = { Text("הזן שוב את הסיסמה") },
                             leadingIcon = {
                                 Icon(Icons.Default.Lock, contentDescription = null, tint = SecondaryCyan)
                             },
@@ -499,7 +559,7 @@ fun AuthScreen(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "I agree to Terms & Conditions and cloud sync policy",
+                                text = "אני מסכים לתנאי השימוש ולמדיניות סנכרון הענן",
                                 color = TextSecondary,
                                 fontSize = 11.sp
                             )
@@ -511,7 +571,7 @@ fun AuthScreen(
                             horizontalArrangement = Arrangement.End
                         ) {
                             TextButton(onClick = { showForgotPasswordDialog = true }) {
-                                Text("Forgot Password?", color = SecondaryCyan, fontSize = 12.sp)
+                                Text("שכחת סיסמה?", color = SecondaryCyan, fontSize = 12.sp)
                             }
                         }
                     }
@@ -527,7 +587,7 @@ fun AuthScreen(
                             .testTag(if (isSignUpMode) "create_account_button" else "login_button")
                     ) {
                         Text(
-                            text = if (isSignUpMode) "Create Account & Start" else "Sign In to AetherStream",
+                            text = if (isSignUpMode) "צור חשבון והתחל לצפות (חובה)" else "התחבר לחשבון AetherStream",
                             color = TextPrimary,
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp
@@ -560,7 +620,7 @@ fun AuthScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.CheckCircle, contentDescription = null, tint = SecondaryCyan, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Auto-fill Demo Credentials (alex@aetherstream.io)", color = SecondaryCyan, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                            Text("מילוי מהיר לדוגמה (alex@aetherstream.io)", color = SecondaryCyan, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
@@ -576,17 +636,17 @@ fun AuthScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.CloudDone, contentDescription = null, tint = SecondaryCyan, modifier = Modifier.size(14.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Cloud Sync", color = TextMuted, fontSize = 11.sp)
+                    Text("סנכרון ענן", color = TextMuted, fontSize = 11.sp)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Security, contentDescription = null, tint = PrimaryViolet, modifier = Modifier.size(14.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("256-Bit Encrypted", color = TextMuted, fontSize = 11.sp)
+                    Text("הצפנת 256-Bit", color = TextMuted, fontSize = 11.sp)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.CheckCircle, contentDescription = null, tint = SecondaryCyan, modifier = Modifier.size(14.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Zero Ads", color = TextMuted, fontSize = 11.sp)
+                    Text("ללא פרסומות", color = TextMuted, fontSize = 11.sp)
                 }
             }
 
@@ -598,10 +658,10 @@ fun AuthScreen(
             AlertDialog(
                 onDismissRequest = { showForgotPasswordDialog = false },
                 containerColor = SurfaceDark,
-                title = { Text("Reset Password", color = TextPrimary, fontWeight = FontWeight.Bold) },
+                title = { Text("איפוס סיסמה / Reset Password", color = TextPrimary, fontWeight = FontWeight.Bold) },
                 text = {
                     Text(
-                        text = "A password reset link will be sent to ${if (email.isNotBlank()) email else "your registered email"} to update your credentials.",
+                        text = "הוראות לאיפוס סיסמה יישלחו לכתובת ${if (email.isNotBlank()) email else "הדוא\"ל הרשומה שלך"} כדי לעדכן את פרטי הגישה.",
                         color = TextSecondary,
                         fontSize = 13.sp
                     )
@@ -610,16 +670,16 @@ fun AuthScreen(
                     Button(
                         onClick = {
                             showForgotPasswordDialog = false
-                            Toast.makeText(context, "Password reset instructions sent to email", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "קישור איפוס נשלח לכתובת הדוא\"ל", Toast.LENGTH_SHORT).show()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryViolet)
                     ) {
-                        Text("Send Link", color = TextPrimary)
+                        Text("שלח קישור", color = TextPrimary)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showForgotPasswordDialog = false }) {
-                        Text("Cancel", color = TextMuted)
+                        Text("ביטול", color = TextMuted)
                     }
                 }
             )

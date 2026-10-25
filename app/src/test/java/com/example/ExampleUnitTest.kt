@@ -100,4 +100,30 @@ class ExampleUnitTest {
         assertEquals(22, repo.subtitleSettings.value.textSizeSp)
         assertEquals(0xFFFFEB3B, repo.subtitleSettings.value.textColorHex)
     }
+
+    @Test
+    fun repository_search_findsItemsByTitleAndActor() = kotlinx.coroutines.test.runTest {
+        val repo = MediaRepository()
+        val titleResults = repo.search("Inception")
+        assertTrue(titleResults.any { it.title.contains("Inception", ignoreCase = true) })
+
+        val actorResults = repo.search("Christian Bale")
+        assertTrue(actorResults.any { it.cast.any { c -> c.contains("Christian Bale", ignoreCase = true) } })
+    }
+
+    @Test
+    fun viewModel_searchHistory_managesItemsCorrectly() {
+        val vm = com.example.ui.MainViewModel()
+        vm.clearSearchHistory()
+        assertEquals(0, vm.searchHistory.value.size)
+
+        vm.addToSearchHistory("Stranger Things")
+        vm.addToSearchHistory("Dune 2")
+        assertEquals(2, vm.searchHistory.value.size)
+        assertEquals("Dune 2", vm.searchHistory.value.first())
+
+        vm.removeSearchHistoryItem("Dune 2")
+        assertEquals(1, vm.searchHistory.value.size)
+        assertEquals("Stranger Things", vm.searchHistory.value.first())
+    }
 }

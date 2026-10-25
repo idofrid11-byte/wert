@@ -92,6 +92,21 @@ class MediaRepository(private val api: StremioApi = StremioApi()) {
             serviceProvider = "Netflix"
         ),
         MediaItem(
+            id = "tt11564570",
+            title = "Glass Onion: A Knives Out Mystery",
+            type = "movie",
+            poster = "https://images.metahub.space/poster/medium/tt11564570/img",
+            backdrop = "https://images.metahub.space/background/medium/tt11564570/img",
+            year = "2022",
+            rating = "7.8",
+            description = "Tech billionaire Miles Bron invites his friends for a getaway on his private Greek island. When someone turns up dead, Detective Benoit Blanc is put on the case.",
+            genres = listOf("Comedy", "Crime", "Mystery"),
+            cast = listOf("Daniel Craig", "Edward Norton", "Janelle Monáe", "Kate Hudson"),
+            director = listOf("Rian Johnson"),
+            runtime = "139 min",
+            serviceProvider = "Netflix"
+        ),
+        MediaItem(
             id = "tt15239678",
             title = "Dune: Part Two",
             type = "movie",
@@ -107,19 +122,34 @@ class MediaRepository(private val api: StremioApi = StremioApi()) {
             serviceProvider = "HBO Max"
         ),
         MediaItem(
-            id = "tt15398776",
-            title = "Oppenheimer",
+            id = "tt0468569",
+            title = "The Dark Knight",
             type = "movie",
-            poster = "https://images.metahub.space/poster/medium/tt15398776/img",
-            backdrop = "https://images.metahub.space/background/medium/tt15398776/img",
-            year = "2023",
-            rating = "8.9",
-            description = "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb during World War II.",
-            genres = listOf("Biography", "Drama", "History"),
-            cast = listOf("Cillian Murphy", "Emily Blunt", "Matt Damon", "Robert Downey Jr."),
+            poster = "https://images.metahub.space/poster/medium/tt0468569/img",
+            backdrop = "https://images.metahub.space/background/medium/tt0468569/img",
+            year = "2008",
+            rating = "9.0",
+            description = "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.",
+            genres = listOf("Action", "Crime", "Drama"),
+            cast = listOf("Christian Bale", "Heath Ledger", "Aaron Eckhart", "Michael Caine"),
             director = listOf("Christopher Nolan"),
-            runtime = "180 min",
-            serviceProvider = "Apple TV+"
+            runtime = "152 min",
+            serviceProvider = "HBO Max"
+        ),
+        MediaItem(
+            id = "tt1877830",
+            title = "The Batman",
+            type = "movie",
+            poster = "https://images.metahub.space/poster/medium/tt1877830/img",
+            backdrop = "https://images.metahub.space/background/medium/tt1877830/img",
+            year = "2022",
+            rating = "7.8",
+            description = "When a sadistic serial killer begins murdering key political figures in Gotham, Batman is forced to investigate the city's hidden corruption.",
+            genres = listOf("Action", "Crime", "Drama"),
+            cast = listOf("Robert Pattinson", "Zoë Kravitz", "Jeffrey Wright", "Colin Farrell"),
+            director = listOf("Matt Reeves"),
+            runtime = "176 min",
+            serviceProvider = "HBO Max"
         ),
         MediaItem(
             id = "tt0816692",
@@ -137,40 +167,129 @@ class MediaRepository(private val api: StremioApi = StremioApi()) {
             serviceProvider = "Disney+"
         ),
         MediaItem(
-            id = "tt0468569",
-            title = "The Dark Knight",
+            id = "tt4154796",
+            title = "Avengers: Endgame",
             type = "movie",
-            poster = "https://images.metahub.space/poster/medium/tt0468569/img",
-            backdrop = "https://images.metahub.space/background/medium/tt0468569/img",
-            year = "2008",
-            rating = "9.0",
-            description = "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.",
-            genres = listOf("Action", "Crime", "Drama"),
-            cast = listOf("Christian Bale", "Heath Ledger", "Aaron Eckhart", "Michael Caine"),
+            poster = "https://images.metahub.space/poster/medium/tt4154796/img",
+            backdrop = "https://images.metahub.space/background/medium/tt4154796/img",
+            year = "2019",
+            rating = "8.4",
+            description = "After the devastating events of Avengers: Infinity War, the universe is in ruins. With the help of remaining allies, the Avengers assemble once more.",
+            genres = listOf("Action", "Adventure", "Sci-Fi"),
+            cast = listOf("Robert Downey Jr.", "Chris Evans", "Mark Ruffalo", "Chris Hemsworth"),
+            director = listOf("Anthony Russo", "Joe Russo"),
+            runtime = "181 min",
+            serviceProvider = "Disney+"
+        ),
+        MediaItem(
+            id = "tt22022452",
+            title = "Inside Out 2",
+            type = "movie",
+            poster = "https://images.metahub.space/poster/medium/tt22022452/img",
+            backdrop = "https://images.metahub.space/background/medium/tt22022452/img",
+            year = "2024",
+            rating = "8.1",
+            description = "Joy, Sadness, Anger, Fear and Disgust are joined by Anxiety, Envy, Ennui and Embarrassment as Riley enters her teenage years.",
+            genres = listOf("Animation", "Adventure", "Comedy"),
+            cast = listOf("Amy Poehler", "Maya Hawke", "Kensington Tallman"),
+            director = listOf("Kelsey Mann"),
+            runtime = "96 min",
+            serviceProvider = "Disney+"
+        ),
+        MediaItem(
+            id = "tt15398776",
+            title = "Oppenheimer",
+            type = "movie",
+            poster = "https://images.metahub.space/poster/medium/tt15398776/img",
+            backdrop = "https://images.metahub.space/background/medium/tt15398776/img",
+            year = "2023",
+            rating = "8.9",
+            description = "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb during World War II.",
+            genres = listOf("Biography", "Drama", "History"),
+            cast = listOf("Cillian Murphy", "Emily Blunt", "Matt Damon", "Robert Downey Jr."),
             director = listOf("Christopher Nolan"),
-            runtime = "152 min",
-            serviceProvider = "HBO Max"
+            runtime = "180 min",
+            serviceProvider = "Apple TV+"
+        ),
+        MediaItem(
+            id = "tt8526618",
+            title = "Killers of the Flower Moon",
+            type = "movie",
+            poster = "https://images.metahub.space/poster/medium/tt8526618/img",
+            backdrop = "https://images.metahub.space/background/medium/tt8526618/img",
+            year = "2023",
+            rating = "8.1",
+            description = "When oil is discovered in 1920s Oklahoma under Osage Nation land, the Osage people are murdered one by one until the FBI steps in to unravel the mystery.",
+            genres = listOf("Crime", "Drama", "History"),
+            cast = listOf("Leonardo DiCaprio", "Robert De Niro", "Lily Gladstone"),
+            director = listOf("Martin Scorsese"),
+            runtime = "206 min",
+            serviceProvider = "Apple TV+"
+        ),
+        MediaItem(
+            id = "tt1745960",
+            title = "Top Gun: Maverick",
+            type = "movie",
+            poster = "https://images.metahub.space/poster/medium/tt1745960/img",
+            backdrop = "https://images.metahub.space/background/medium/tt1745960/img",
+            year = "2022",
+            rating = "8.3",
+            description = "After thirty years, Maverick is still pushing the envelope as a top naval aviator, but must confront ghosts of his past when he leads TOP GUN's elite graduates on an impossible mission.",
+            genres = listOf("Action", "Drama"),
+            cast = listOf("Tom Cruise", "Miles Teller", "Jennifer Connelly"),
+            director = listOf("Joseph Kosinski"),
+            runtime = "130 min",
+            serviceProvider = "Prime Video"
+        ),
+        MediaItem(
+            id = "tt9603212",
+            title = "Mission: Impossible - Dead Reckoning",
+            type = "movie",
+            poster = "https://images.metahub.space/poster/medium/tt9603212/img",
+            backdrop = "https://images.metahub.space/background/medium/tt9603212/img",
+            year = "2023",
+            rating = "7.8",
+            description = "Ethan Hunt and his IMF team must track down a dangerous weapon before it falls into the wrong hands.",
+            genres = listOf("Action", "Adventure", "Thriller"),
+            cast = listOf("Tom Cruise", "Hayley Atwell", "Ving Rhames", "Simon Pegg"),
+            director = listOf("Christopher McQuarrie"),
+            runtime = "163 min",
+            serviceProvider = "Paramount+"
+        ),
+        MediaItem(
+            id = "tt14230458",
+            title = "Poor Things",
+            type = "movie",
+            poster = "https://images.metahub.space/poster/medium/tt14230458/img",
+            backdrop = "https://images.metahub.space/background/medium/tt14230458/img",
+            year = "2023",
+            rating = "7.9",
+            description = "The incredible tale about the fantastical evolution of Bella Baxter, a young woman brought back to life by the brilliant and unorthodox scientist Dr. Godwin Baxter.",
+            genres = listOf("Comedy", "Drama", "Romance", "Sci-Fi"),
+            cast = listOf("Emma Stone", "Mark Ruffalo", "Willem Dafoe"),
+            director = listOf("Yorgos Lanthimos"),
+            runtime = "141 min",
+            serviceProvider = "Hulu"
         )
     )
 
     private val curatedSeries = listOf(
         MediaItem(
-            id = "tt0903747",
-            title = "Breaking Bad",
+            id = "tt4574334",
+            title = "Stranger Things",
             type = "series",
-            poster = "https://images.metahub.space/poster/medium/tt0903747/img",
-            backdrop = "https://images.metahub.space/background/medium/tt0903747/img",
-            year = "2008-2013",
-            rating = "9.5",
-            description = "A chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine with a former student in order to secure his family's future.",
-            genres = listOf("Crime", "Drama", "Thriller"),
-            cast = listOf("Bryan Cranston", "Aaron Paul", "Anna Gunn", "Bob Odenkirk"),
-            director = listOf("Vince Gilligan"),
-            runtime = "49 min",
-            serviceProvider = "Prime Video",
+            poster = "https://images.metahub.space/poster/medium/tt4574334/img",
+            backdrop = "https://images.metahub.space/background/medium/tt4574334/img",
+            year = "2016-2025",
+            rating = "8.7",
+            description = "When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces and one strange little girl.",
+            genres = listOf("Drama", "Fantasy", "Horror"),
+            cast = listOf("Millie Bobby Brown", "Finn Wolfhard", "Winona Ryder", "David Harbour"),
+            director = listOf("The Duffer Brothers"),
+            runtime = "51 min",
+            serviceProvider = "Netflix",
             episodes = listOf(
-                Episode("tt0903747:1:1", 1, 1, "Pilot", "Walter White, a struggling high school chemistry teacher, is diagnosed with Stage III cancer."),
-                Episode("tt0903747:1:2", 1, 2, "Cat's in the Bag...", "Walt and Jesse attempt to dispose of two bodies in the RV.")
+                Episode("tt4574334:1:1", 1, 1, "Chapter One: The Vanishing of Will Byers", "On his way home from a friend's house, young Will sees something terrifying.")
             )
         ),
         MediaItem(
@@ -193,21 +312,57 @@ class MediaRepository(private val api: StremioApi = StremioApi()) {
             )
         ),
         MediaItem(
-            id = "tt4574334",
-            title = "Stranger Things",
+            id = "tt13443470",
+            title = "Wednesday",
             type = "series",
-            poster = "https://images.metahub.space/poster/medium/tt4574334/img",
-            backdrop = "https://images.metahub.space/background/medium/tt4574334/img",
-            year = "2016-2025",
-            rating = "8.7",
-            description = "When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces and one strange little girl.",
-            genres = listOf("Drama", "Fantasy", "Horror"),
-            cast = listOf("Millie Bobby Brown", "Finn Wolfhard", "Winona Ryder", "David Harbour"),
-            director = listOf("The Duffer Brothers"),
-            runtime = "51 min",
+            poster = "https://images.metahub.space/poster/medium/tt13443470/img",
+            backdrop = "https://images.metahub.space/background/medium/tt13443470/img",
+            year = "2022-2025",
+            rating = "8.1",
+            description = "Follows Wednesday Addams' years as a student, attempting to master her emerging psychic ability, thwart a monstrous killing spree and solve the mystery that embroiled her parents.",
+            genres = listOf("Comedy", "Crime", "Fantasy"),
+            cast = listOf("Jenna Ortega", "Hunter Doohan", "Percy Hynes White"),
+            director = listOf("Tim Burton"),
+            runtime = "50 min",
             serviceProvider = "Netflix",
             episodes = listOf(
-                Episode("tt4574334:1:1", 1, 1, "Chapter One: The Vanishing of Will Byers", "On his way home from a friend's house, young Will sees something terrifying.")
+                Episode("tt13443470:1:1", 1, 1, "Wednesday's Child is Full of Woe", "Wednesday arrives at Nevermore Academy and uncovers strange happenings.")
+            )
+        ),
+        MediaItem(
+            id = "tt10919420",
+            title = "Squid Game",
+            type = "series",
+            poster = "https://images.metahub.space/poster/medium/tt10919420/img",
+            backdrop = "https://images.metahub.space/background/medium/tt10919420/img",
+            year = "2021-2024",
+            rating = "8.0",
+            description = "Hundreds of cash-strapped players accept a strange invitation to compete in children's games for a tempting prize, but the stakes are deadly.",
+            genres = listOf("Action", "Drama", "Mystery"),
+            cast = listOf("Lee Jung-jae", "Park Hae-soo", "Wi Ha-joon"),
+            director = listOf("Hwang Dong-hyuk"),
+            runtime = "55 min",
+            serviceProvider = "Netflix",
+            episodes = listOf(
+                Episode("tt10919420:1:1", 1, 1, "Red Light, Green Light", "Hoping to win easy money, a desperate Gi-hun enters the tournament.")
+            )
+        ),
+        MediaItem(
+            id = "tt11198330",
+            title = "House of the Dragon",
+            type = "series",
+            poster = "https://images.metahub.space/poster/medium/tt11198330/img",
+            backdrop = "https://images.metahub.space/background/medium/tt11198330/img",
+            year = "2022-2025",
+            rating = "8.5",
+            description = "An internal succession war within House Targaryen at the height of its power, 172 years before the birth of Daenerys Targaryen.",
+            genres = listOf("Action", "Adventure", "Drama"),
+            cast = listOf("Matt Smith", "Emma D'Arcy", "Olivia Cooke"),
+            director = listOf("Ryan J. Condal"),
+            runtime = "62 min",
+            serviceProvider = "HBO Max",
+            episodes = listOf(
+                Episode("tt11198330:1:1", 1, 1, "The Heirs of the Dragon", "Viserys hosts a tournament to celebrate the birth of his second child.")
             )
         ),
         MediaItem(
@@ -229,6 +384,24 @@ class MediaRepository(private val api: StremioApi = StremioApi()) {
             )
         ),
         MediaItem(
+            id = "tt7660850",
+            title = "Succession",
+            type = "series",
+            poster = "https://images.metahub.space/poster/medium/tt7660850/img",
+            backdrop = "https://images.metahub.space/background/medium/tt7660850/img",
+            year = "2018-2023",
+            rating = "8.9",
+            description = "The Roy family is known for controlling the biggest media and entertainment company in the world. However, their world changes when their aging father steps down from the company.",
+            genres = listOf("Drama"),
+            cast = listOf("Brian Cox", "Jeremy Strong", "Sarah Snook", "Kieran Culkin"),
+            director = listOf("Jesse Armstrong"),
+            runtime = "60 min",
+            serviceProvider = "HBO Max",
+            episodes = listOf(
+                Episode("tt7660850:1:1", 1, 1, "Celebration", "On his 80th birthday, media titan Logan Roy shocks his family.")
+            )
+        ),
+        MediaItem(
             id = "tt8111088",
             title = "The Mandalorian",
             type = "series",
@@ -244,6 +417,42 @@ class MediaRepository(private val api: StremioApi = StremioApi()) {
             serviceProvider = "Disney+",
             episodes = listOf(
                 Episode("tt8111088:1:1", 1, 1, "Chapter 1: The Mandalorian", "A Mandalorian bounty hunter tracks a target in a well-guarded enclave.")
+            )
+        ),
+        MediaItem(
+            id = "tt9140554",
+            title = "Loki",
+            type = "series",
+            poster = "https://images.metahub.space/poster/medium/tt9140554/img",
+            backdrop = "https://images.metahub.space/background/medium/tt9140554/img",
+            year = "2021-2023",
+            rating = "8.2",
+            description = "The mercurial villain Loki resumes his role as the God of Mischief following the events of Avengers: Endgame.",
+            genres = listOf("Action", "Adventure", "Fantasy"),
+            cast = listOf("Tom Hiddleston", "Owen Wilson", "Sophia Di Martino"),
+            director = listOf("Michael Waldron"),
+            runtime = "50 min",
+            serviceProvider = "Disney+",
+            episodes = listOf(
+                Episode("tt9140554:1:1", 1, 1, "Glorious Purpose", "Loki finds himself in trouble with the bureaucratic Time Variance Authority.")
+            )
+        ),
+        MediaItem(
+            id = "tt9253284",
+            title = "Andor",
+            type = "series",
+            poster = "https://images.metahub.space/poster/medium/tt9253284/img",
+            backdrop = "https://images.metahub.space/background/medium/tt9253284/img",
+            year = "2022-2025",
+            rating = "8.4",
+            description = "In an era filled with danger, deception and intrigue, Cassian will embark on the path that is destined to turn him into a rebel hero.",
+            genres = listOf("Action", "Adventure", "Drama"),
+            cast = listOf("Diego Luna", "Stellan Skarsgård", "Genevieve O'Reilly"),
+            director = listOf("Tony Gilroy"),
+            runtime = "45 min",
+            serviceProvider = "Disney+",
+            episodes = listOf(
+                Episode("tt9253284:1:1", 1, 1, "Kassa", "Cassian Andor's search for answers about his past makes him a target.")
             )
         ),
         MediaItem(
@@ -265,6 +474,24 @@ class MediaRepository(private val api: StremioApi = StremioApi()) {
             )
         ),
         MediaItem(
+            id = "tt10986410",
+            title = "Ted Lasso",
+            type = "series",
+            poster = "https://images.metahub.space/poster/medium/tt10986410/img",
+            backdrop = "https://images.metahub.space/background/medium/tt10986410/img",
+            year = "2020-2023",
+            rating = "8.8",
+            description = "American college football coach Ted Lasso heads to London to manage AFC Richmond, a struggling English Premier League football team.",
+            genres = listOf("Comedy", "Drama", "Sport"),
+            cast = listOf("Jason Sudeikis", "Hannah Waddingham", "Brett Goldstein"),
+            director = listOf("Brendan Hunt", "Joe Kelly"),
+            runtime = "35 min",
+            serviceProvider = "Apple TV+",
+            episodes = listOf(
+                Episode("tt10986410:1:1", 1, 1, "Pilot", "Ted Lasso is hired by AFC Richmond's new owner Rebecca Welton.")
+            )
+        ),
+        MediaItem(
             id = "tt1190634",
             title = "The Boys",
             type = "series",
@@ -283,21 +510,94 @@ class MediaRepository(private val api: StremioApi = StremioApi()) {
             )
         ),
         MediaItem(
-            id = "tt11198330",
-            title = "House of the Dragon",
+            id = "tt0903747",
+            title = "Breaking Bad",
             type = "series",
-            poster = "https://images.metahub.space/poster/medium/tt11198330/img",
-            backdrop = "https://images.metahub.space/background/medium/tt11198330/img",
-            year = "2022-2025",
-            rating = "8.5",
-            description = "An internal succession war within House Targaryen at the height of its power, 172 years before the birth of Daenerys Targaryen.",
-            genres = listOf("Action", "Adventure", "Drama"),
-            cast = listOf("Matt Smith", "Emma D'Arcy", "Olivia Cooke"),
-            director = listOf("Ryan J. Condal"),
-            runtime = "62 min",
-            serviceProvider = "HBO Max",
+            poster = "https://images.metahub.space/poster/medium/tt0903747/img",
+            backdrop = "https://images.metahub.space/background/medium/tt0903747/img",
+            year = "2008-2013",
+            rating = "9.5",
+            description = "A chemistry teacher diagnosed with inoperable lung cancer turns to manufacturing and selling methamphetamine with a former student in order to secure his family's future.",
+            genres = listOf("Crime", "Drama", "Thriller"),
+            cast = listOf("Bryan Cranston", "Aaron Paul", "Anna Gunn", "Bob Odenkirk"),
+            director = listOf("Vince Gilligan"),
+            runtime = "49 min",
+            serviceProvider = "Prime Video",
             episodes = listOf(
-                Episode("tt11198330:1:1", 1, 1, "The Heirs of the Dragon", "Viserys hosts a tournament to celebrate the birth of his second child.")
+                Episode("tt0903747:1:1", 1, 1, "Pilot", "Walter White, a struggling high school chemistry teacher, is diagnosed with Stage III cancer."),
+                Episode("tt0903747:1:2", 1, 2, "Cat's in the Bag...", "Walt and Jesse attempt to dispose of two bodies in the RV.")
+            )
+        ),
+        MediaItem(
+            id = "tt12637874",
+            title = "Fallout",
+            type = "series",
+            poster = "https://images.metahub.space/poster/medium/tt12637874/img",
+            backdrop = "https://images.metahub.space/background/medium/tt12637874/img",
+            year = "2024",
+            rating = "8.5",
+            description = "In a future, post-apocalyptic Los Angeles brought about by nuclear decimation, citizens must live in underground bunkers to protect themselves from radiation and mutants.",
+            genres = listOf("Action", "Adventure", "Sci-Fi"),
+            cast = listOf("Ella Purnell", "Walton Goggins", "Aaron Moten"),
+            director = listOf("Jonathan Nolan"),
+            runtime = "60 min",
+            serviceProvider = "Prime Video",
+            episodes = listOf(
+                Episode("tt12637874:1:1", 1, 1, "The End", "Lucy leaves Vault 33 behind to venture out into the irradiated surface wasteland.")
+            )
+        ),
+        MediaItem(
+            id = "tt4236770",
+            title = "Yellowstone",
+            type = "series",
+            poster = "https://images.metahub.space/poster/medium/tt4236770/img",
+            backdrop = "https://images.metahub.space/background/medium/tt4236770/img",
+            year = "2018-2024",
+            rating = "8.7",
+            description = "A ranching family in Montana faces off against others encroaching on their land in this neo-Western epic drama.",
+            genres = listOf("Drama", "Western"),
+            cast = listOf("Kevin Costner", "Luke Grimes", "Kelly Reilly"),
+            director = listOf("Taylor Sheridan"),
+            runtime = "55 min",
+            serviceProvider = "Paramount+",
+            episodes = listOf(
+                Episode("tt4236770:1:1", 1, 1, "Daybreak", "John Dutton defends his ranch against developers and a neighboring reservation.")
+            )
+        ),
+        MediaItem(
+            id = "tt14452776",
+            title = "The Bear",
+            type = "series",
+            poster = "https://images.metahub.space/poster/medium/tt14452776/img",
+            backdrop = "https://images.metahub.space/background/medium/tt14452776/img",
+            year = "2022-2024",
+            rating = "8.6",
+            description = "A young fine-dining chef comes home to Chicago to run his family Italian beef sandwich shop after a heartbreaking death.",
+            genres = listOf("Comedy", "Drama"),
+            cast = listOf("Jeremy Allen White", "Ebon Moss-Bachrach", "Ayo Edebiri"),
+            director = listOf("Christopher Storer"),
+            runtime = "32 min",
+            serviceProvider = "Hulu",
+            episodes = listOf(
+                Episode("tt14452776:1:1", 1, 1, "System", "Carmy attempts to modernize The Original Beef of Chicagoland.")
+            )
+        ),
+        MediaItem(
+            id = "tt2788316",
+            title = "Shōgun",
+            type = "series",
+            poster = "https://images.metahub.space/poster/medium/tt2788316/img",
+            backdrop = "https://images.metahub.space/background/medium/tt2788316/img",
+            year = "2024",
+            rating = "8.7",
+            description = "When a mysterious European ship is found marooned in a nearby fishing village, Lord Yoshii Toranaga discovers secrets that could tip the scales of power in feudal Japan.",
+            genres = listOf("Adventure", "Drama", "History"),
+            cast = listOf("Hiroyuki Sanada", "Cosmo Jarvis", "Anna Sawai"),
+            director = listOf("Rachel Kondo", "Justin Marks"),
+            runtime = "58 min",
+            serviceProvider = "Hulu",
+            episodes = listOf(
+                Episode("tt2788316:1:1", 1, 1, "Anjin", "English pilot John Blackthorne washes ashore in Japan amidst rising political turmoil.")
             )
         )
     )
@@ -362,23 +662,40 @@ class MediaRepository(private val api: StremioApi = StremioApi()) {
             director = listOf("Ryu Nakayama"),
             runtime = "24 min",
             serviceProvider = "Crunchyroll"
+        ),
+        MediaItem(
+            id = "tt21209876",
+            title = "Solo Leveling",
+            type = "anime",
+            poster = "https://images.metahub.space/poster/medium/tt21209876/img",
+            backdrop = "https://images.metahub.space/background/medium/tt21209876/img",
+            year = "2024",
+            rating = "8.4",
+            description = "In a world where hunters must battle deadly monsters to protect human race, Sung Jinwoo, notoriously known as the weakest hunter of all mankind, finds himself in a struggle for survival.",
+            genres = listOf("Animation", "Action", "Adventure", "Fantasy"),
+            cast = listOf("Taito Ban", "Genta Nakamura", "Reina Ueda"),
+            director = listOf("Shunsuke Nakashige"),
+            runtime = "24 min",
+            serviceProvider = "Crunchyroll"
         )
     )
 
     // ==========================================
     // STREAMING SERVICES CATALOGS
     // ==========================================
-    val streamingServices = listOf(
+    private val streamingServicesList = listOf(
         StreamingService("all", "All Services", "ALL", 0xFF6C5CE7, "Aggregated Global Stream Directory"),
-        StreamingService("netflix", "Netflix", "N", 0xFFE50914, "Stranger Things, Arcane & Inception"),
-        StreamingService("hbo", "HBO Max", "MAX", 0xFF9900FA, "House of the Dragon, Dune 2 & The Dark Knight"),
-        StreamingService("disney", "Disney+", "D+", 0xFF113CCF, "The Mandalorian, Interstellar & Marvel"),
-        StreamingService("apple", "Apple TV+", "tv+", 0xFF555555, "Severance, Ted Lasso & Oppenheimer"),
-        StreamingService("prime", "Prime Video", "prime", 0xFF00A8E1, "The Boys, Breaking Bad & Fallout"),
-        StreamingService("crunchyroll", "Crunchyroll", "CR", 0xFFF47521, "Attack on Titan, Jujutsu Kaisen & Demon Slayer")
+        StreamingService("netflix", "Netflix", "N", 0xFFE50914, "Stranger Things, Squid Game, Arcane & Inception"),
+        StreamingService("hbo", "HBO Max", "MAX", 0xFF9900FA, "House of the Dragon, The Last of Us, Succession & Dune 2"),
+        StreamingService("disney", "Disney+", "D+", 0xFF113CCF, "The Mandalorian, Loki, Andor, Avengers & Inside Out 2"),
+        StreamingService("apple", "Apple TV+", "tv+", 0xFF555555, "Severance, Ted Lasso, Slow Horses & Oppenheimer"),
+        StreamingService("prime", "Prime Video", "prime", 0xFF00A8E1, "The Boys, Fallout, Reacher & Breaking Bad"),
+        StreamingService("paramount", "Paramount+", "P+", 0xFF0064FF, "Yellowstone, Mission: Impossible & Star Trek"),
+        StreamingService("hulu", "Hulu", "hulu", 0xFF1CE783, "The Bear, Shōgun & Poor Things"),
+        StreamingService("crunchyroll", "Crunchyroll", "CR", 0xFFF47521, "Solo Leveling, Attack on Titan & Jujutsu Kaisen")
     )
 
-    fun getStreamingServices(): List<StreamingService> = streamingServices
+    fun getStreamingServices(): List<StreamingService> = streamingServicesList
 
     fun getMediaForStreamingService(serviceId: String): List<MediaItem> {
         val all = curatedMovies + curatedSeries + curatedAnime
@@ -388,6 +705,8 @@ class MediaRepository(private val api: StremioApi = StremioApi()) {
             "disney" -> all.filter { it.serviceProvider == "Disney+" }
             "apple" -> all.filter { it.serviceProvider == "Apple TV+" }
             "prime" -> all.filter { it.serviceProvider == "Prime Video" }
+            "paramount" -> all.filter { it.serviceProvider == "Paramount+" }
+            "hulu" -> all.filter { it.serviceProvider == "Hulu" }
             "crunchyroll" -> all.filter { it.serviceProvider == "Crunchyroll" }
             else -> all
         }
@@ -544,18 +863,32 @@ class MediaRepository(private val api: StremioApi = StremioApi()) {
     }
 
     suspend fun search(query: String): List<MediaItem> {
-        if (query.isBlank()) return emptyList()
-        val movieResults = api.searchCatalog("movie", query)
-        val seriesResults = api.searchCatalog("series", query)
-        val combined = (movieResults + seriesResults).distinctBy { it.id }
-        if (combined.isNotEmpty()) return combined
+        val trimmed = query.trim()
+        if (trimmed.isBlank()) return emptyList()
 
-        // Fallback search in curated items
+        // 1. Instant local search across rich metadata (title, genres, cast, director, serviceProvider, description, year)
         val allCurated = curatedMovies + curatedSeries + curatedAnime
-        return allCurated.filter {
-            it.title.contains(query, ignoreCase = true) ||
-            it.genres.any { g -> g.contains(query, ignoreCase = true) }
+        val localMatches = allCurated.filter { item ->
+            item.title.contains(trimmed, ignoreCase = true) ||
+            item.genres.any { g -> g.contains(trimmed, ignoreCase = true) } ||
+            (item.serviceProvider != null && item.serviceProvider.contains(trimmed, ignoreCase = true)) ||
+            item.cast.any { c -> c.contains(trimmed, ignoreCase = true) } ||
+            item.director.any { d -> d.contains(trimmed, ignoreCase = true) } ||
+            item.description.contains(trimmed, ignoreCase = true) ||
+            item.year.contains(trimmed)
         }
+
+        // 2. Query remote Cinemeta API
+        val remoteMatches = try {
+            val movieResults = api.searchCatalog("movie", trimmed)
+            val seriesResults = api.searchCatalog("series", trimmed)
+            (movieResults + seriesResults).distinctBy { it.id }
+        } catch (e: Exception) {
+            emptyList()
+        }
+
+        // Combine prioritizing local curated items first
+        return (localMatches + remoteMatches).distinctBy { it.id }
     }
 
     suspend fun getMediaDetails(type: String, id: String): MediaItem {
@@ -729,7 +1062,9 @@ class MediaRepository(private val api: StremioApi = StremioApi()) {
 
     fun getAudioTracksForMedia(media: MediaItem): List<com.example.data.model.AudioTrack> {
         return listOf(
+            com.example.data.model.AudioTrack("he_dub", "עברית [דיבוב מלא]", "he", "Dolby 5.1", "E-AC3"),
             com.example.data.model.AudioTrack("en_orig", "English [Original]", "en", "Dolby 5.1", "AC3"),
+            com.example.data.model.AudioTrack("en_atmos", "English [Dolby Atmos 7.1]", "en", "Dolby 7.1", "TrueHD"),
             com.example.data.model.AudioTrack("en_stereo", "English [Descriptive Audio]", "en", "Stereo 2.0", "AAC"),
             com.example.data.model.AudioTrack("es_dub", "Spanish (Latinoamérica)", "es", "Dolby 5.1", "AC3"),
             com.example.data.model.AudioTrack("fr_dub", "French (Français)", "fr", "Stereo 2.0", "AAC"),
@@ -741,14 +1076,17 @@ class MediaRepository(private val api: StremioApi = StremioApi()) {
 
     fun getSubtitleTracksForMedia(media: MediaItem): List<com.example.data.model.SubtitleTrack> {
         return listOf(
-            com.example.data.model.SubtitleTrack("none", "Off (No Subtitles)", "none", ""),
+            com.example.data.model.SubtitleTrack("he_sub", "עברית (Hebrew - תרגום רשמי)", "he", "SRT", "OpenSubtitles Israel"),
+            com.example.data.model.SubtitleTrack("he_sync", "עברית (Hebrew - סנכרון Torec)", "he", "SRT", "Torec Israel"),
+            com.example.data.model.SubtitleTrack("he_en_dual", "עברית + English (Dual Subtitles)", "he+en", "ASS", "Aether Dual Engine"),
             com.example.data.model.SubtitleTrack("en_sub", "English [CC & Full]", "en", "SRT", "OpenSubtitles v3"),
             com.example.data.model.SubtitleTrack("es_sub", "Spanish (Español)", "es", "SRT", "OpenSubtitles v3"),
             com.example.data.model.SubtitleTrack("fr_sub", "French (Français)", "fr", "SRT", "OpenSubtitles v3"),
             com.example.data.model.SubtitleTrack("de_sub", "German (Deutsch)", "de", "SRT", "OpenSubtitles v3"),
             com.example.data.model.SubtitleTrack("ja_sub", "Japanese (日本語)", "ja", "VTT", "AnimeKitsu Sub"),
             com.example.data.model.SubtitleTrack("pt_sub", "Portuguese (Português)", "pt", "SRT", "OpenSubtitles v3"),
-            com.example.data.model.SubtitleTrack("ar_sub", "Arabic (العربية)", "ar", "SRT", "OpenSubtitles v3")
+            com.example.data.model.SubtitleTrack("ar_sub", "Arabic (العربية)", "ar", "SRT", "OpenSubtitles v3"),
+            com.example.data.model.SubtitleTrack("none", "ללא כתוביות (Off)", "none", "")
         )
     }
 
