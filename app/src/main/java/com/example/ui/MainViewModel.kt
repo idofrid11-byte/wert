@@ -347,6 +347,18 @@ class MainViewModel(
         repository.toggleWatchlist(item)
     }
 
+    fun removeFromWatchlist(mediaId: String) {
+        viewModelScope.launch {
+            repository.watchlistRepository?.removeByMediaId(mediaId)
+        }
+    }
+
+    fun toggleFavorite(mediaId: String) {
+        viewModelScope.launch {
+            repository.watchlistRepository?.toggleFavorite(mediaId)
+        }
+    }
+
     fun isWatchlisted(mediaId: String): Boolean {
         return repository.isWatchlisted(mediaId)
     }

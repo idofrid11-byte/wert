@@ -14,12 +14,24 @@ import com.example.data.model.UpcomingEpisode
 import com.example.data.model.UserAccount
 import com.example.data.model.WatchStats
 import com.example.data.model.WatchlistItem
+import com.example.AetherStreamApp
+import com.example.data.local.entity.toEntity
+import com.example.data.local.entity.toWatchlistItem
 import com.example.data.remote.StremioApi
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
-class MediaRepository(private val api: StremioApi = StremioApi()) {
+class MediaRepository(
+    private val api: StremioApi = StremioApi(),
+    val watchlistRepository: WatchlistRepository? = try { AetherStreamApp.instance.watchlistRepository } catch (_: Exception) { null }
+) {
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
 
     // ==========================================
     // USER AUTHENTICATION & ACCOUNT (MANDATORY GATE)
@@ -804,44 +816,55 @@ class MediaRepository(private val api: StremioApi = StremioApi()) {
     val addons: StateFlow<List<Addon>> = _addons.asStateFlow()
 
     // Watchlist & Continue Watching State
-    private val _watchlist = MutableStateFlow(
-        listOf(
-            WatchlistItem(
-                mediaId = "tt1375666",
-                title = "Inception",
-                poster = "https://images.metahub.space/poster/medium/tt1375666/img",
-                type = "movie",
-                year = "2010",
-                rating = "8.8",
-                progressPercent = 0.45f,
-                lastWatchedPositionMs = 3996000L, // ~66 min
-                totalDurationMs = 8880000L
-            ),
-            WatchlistItem(
-                mediaId = "tt15239678",
-                title = "Dune: Part Two",
-                poster = "https://images.metahub.space/poster/medium/tt15239678/img",
-                type = "movie",
-                year = "2024",
-                rating = "8.6",
-                progressPercent = 0.12f,
-                lastWatchedPositionMs = 1195000L,
-                totalDurationMs = 9960000L
-            ),
-            WatchlistItem(
-                mediaId = "tt11126994",
-                title = "Arcane",
-                poster = "https://images.metahub.space/poster/medium/tt11126994/img",
-                type = "series",
-                year = "2021",
-                rating = "9.0",
-                progressPercent = 0.85f,
-                lastWatchedPositionMs = 2142000L,
-                totalDurationMs = 2520000L
-            )
+    private val defaultInitialWatchlist = listOf(
+        WatchlistItem(
+            mediaId = "tt1375666",
+            title = "Inception",
+            poster = "https://images.metahub.space/poster/medium/tt1375666/img",
+            type = "movie",
+            year = "2010",
+            rating = "8.8",
+            progressPercent = 0.45f,
+            lastWatchedPositionMs = 3996000L, // ~66 min
+            totalDurationMs = 8880000L
+        ),
+        WatchlistItem(
+            mediaId = "tt15239678",
+            title = "Dune: Part Two",
+            poster = "https://images.metahub.space/poster/medium/tt15239678/img",
+            type = "movie",
+            year = "2024",
+            rating = "8.6",
+            progressPercent = 0.12f,
+            lastWatchedPositionMs = 1195000L,
+            totalDurationMs = 9960000L
+        ),
+        WatchlistItem(
+            mediaId = "tt11126994",
+            title = "Arcane",
+            poster = "https://images.metahub.space/poster/medium/tt11126994/img",
+            type = "series",
+            year = "2021",
+            rating = "9.0",
+            progressPercent = 0.85f,
+            lastWatchedPositionMs = 2142000L,
+            totalDurationMs = 2520000L
         )
     )
+
+    private val _watchlist = MutableStateFlow(defaultInitialWatchlist)
     val watchlist: StateFlow<List<WatchlistItem>> = _watchlist.asStateFlow()
+
+    init {
+        watchlistRepository?.let { repo ->
+            coroutineScope.launch {
+                repo.seedInitialDataIfEmpty(defaultInitialWatchlist.map { it.toEntity() })
+                repo.allWatchlist.collect { entities ->
+                    _watchlist.value = entities.map { it.toWatchlistItem() }
+                }
+            }
+        }
+    }
 
     suspend fun getTrending(): List<MediaItem> {
         val remote = api.getCatalog("movie", "top")
@@ -982,28 +1005,39 @@ class MediaRepository(private val api: StremioApi = StremioApi()) {
     }
 
     fun toggleWatchlist(item: MediaItem) {
-        val current = _watchlist.value.toMutableList()
-        val index = current.indexOfFirst { it.mediaId == item.id }
-        if (index >= 0) {
-            current.removeAt(index)
+        if (watchlistRepository != null) {
+            coroutineScope.launch {
+                watchlistRepository.toggleWatchlist(item)
+            }
         } else {
-            current.add(
-                0,
-                WatchlistItem(
-                    mediaId = item.id,
-                    title = item.title,
-                    poster = item.poster,
-                    type = item.type,
-                    year = item.year,
-                    rating = item.rating,
-                    progressPercent = 0.05f
+            val current = _watchlist.value.toMutableList()
+            val index = current.indexOfFirst { it.mediaId == item.id }
+            if (index >= 0) {
+                current.removeAt(index)
+            } else {
+                current.add(
+                    0,
+                    WatchlistItem(
+                        mediaId = item.id,
+                        title = item.title,
+                        poster = item.poster,
+                        type = item.type,
+                        year = item.year,
+                        rating = item.rating,
+                        progressPercent = 0.05f
+                    )
                 )
-            )
+            }
+            _watchlist.value = current
         }
-        _watchlist.value = current
     }
 
     fun updateProgress(mediaId: String, currentPosMs: Long, totalDurationMs: Long) {
+        if (watchlistRepository != null) {
+            coroutineScope.launch {
+                watchlistRepository.updateProgress(mediaId, currentPosMs, totalDurationMs)
+            }
+        }
         val current = _watchlist.value.toMutableList()
         val percent = if (totalDurationMs > 0) (currentPosMs.toFloat() / totalDurationMs.toFloat()).coerceIn(0f, 1f) else 0f
         val index = current.indexOfFirst { it.mediaId == mediaId }

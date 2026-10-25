@@ -203,17 +203,7 @@ fun LibraryScreen(
                     viewModel.playMediaDefault(dummyMedia)
                 },
                 onRemove = { item ->
-                    val dummyMedia = MediaItem(
-                        id = item.mediaId,
-                        title = item.title,
-                        type = item.type,
-                        poster = item.poster,
-                        backdrop = item.poster,
-                        year = item.year,
-                        rating = item.rating,
-                        description = ""
-                    )
-                    viewModel.toggleWatchlist(dummyMedia)
+                    viewModel.removeFromWatchlist(item.mediaId)
                 }
             )
 
